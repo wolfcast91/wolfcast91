@@ -1,8 +1,12 @@
 {
   "name": "cooper-animations",
   "version": "1.0.0",
-  "description": "My Remotion video",
-  "repository": {},
+  "description": "Intro/hook animations for the \"Weg zum Porsche\" content series",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wolfcast91/wolfcast91.git",
+    "directory": "cooper-animations"
+  },
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {

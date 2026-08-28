@@ -28,6 +28,10 @@ export type HookCopy = {
   readonly headlineFontSize: number;
 };
 
+// TODO(copy): EN wording still pending. The current DE hook is "Ich schenk euch
+// mein Traumauto!" (I'm gifting YOU my dream car). Decide whether the EN cut
+// mirrors that ("I'M GIVING YOU MY DREAM CAR!") or whether only the DE cut ships.
+// Either way: no "Porsche" in the hook copy.
 export const COPY_EN: HookCopy = {
   headline: "I WILL GIVE\nAWAY MY\nDREAM CAR!",
   subline: "The problem?",
@@ -35,10 +39,11 @@ export const COPY_EN: HookCopy = {
 };
 
 export const COPY_DE: HookCopy = {
-  headline: "ICH VERSCHENKE\nMEIN TRAUMAUTO!",
+  // Canonical hook wording for the series: "Ich schenk euch mein Traumauto!"
+  headline: "ICH SCHENK EUCH\nMEIN TRAUMAUTO!",
   subline: "Das Problem?",
-  // Smaller than the EN cut: the longest DE line is 15 characters, and the
-  // spring overshoot briefly scales the headline ~13% past its final size.
+  // Both lines are 15 characters (the previous longest DE line was also 15), so
+  // size 86 still clears the frame at the spring overshoot (~13% past final).
   headlineFontSize: 86,
 };
 
