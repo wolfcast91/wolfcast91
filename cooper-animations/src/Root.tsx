@@ -4,11 +4,11 @@ import { HelloWorld } from "./HelloWorld";
 import { Logo } from "./HelloWorld/Logo";
 import { PorscheHook } from "./PorscheHook";
 import {
+  COPY_DE,
+  COPY_EN,
   DURATION_IN_FRAMES,
   FPS,
-  HEADLINE_TEXT,
   HEIGHT,
-  SUBLINE_TEXT,
   WIDTH,
 } from "./PorscheHook/constants";
 
@@ -26,8 +26,24 @@ export const RemotionRoot: React.FC = () => {
         width={WIDTH}
         height={HEIGHT}
         defaultProps={{
-          headlineText: HEADLINE_TEXT,
-          sublineText: SUBLINE_TEXT,
+          headlineText: COPY_EN.headline,
+          sublineText: COPY_EN.subline,
+          headlineFontSize: COPY_EN.headlineFontSize,
+        }}
+      />
+
+      {/* German cut: npx remotion render PorscheHookDE */}
+      <Composition
+        id="PorscheHookDE"
+        component={PorscheHook}
+        durationInFrames={DURATION_IN_FRAMES}
+        fps={FPS}
+        width={WIDTH}
+        height={HEIGHT}
+        defaultProps={{
+          headlineText: COPY_DE.headline,
+          sublineText: COPY_DE.subline,
+          headlineFontSize: COPY_DE.headlineFontSize,
         }}
       />
 

@@ -31,6 +31,8 @@ import { LightStreak } from "./LightStreak";
 export type PorscheHookProps = {
   readonly headlineText?: string;
   readonly sublineText?: string;
+  /** Line lengths differ per language, so the size travels with the copy. */
+  readonly headlineFontSize?: number;
 };
 
 const centered: React.CSSProperties = {
@@ -39,7 +41,10 @@ const centered: React.CSSProperties = {
   textAlign: "center",
 };
 
-const Headline: React.FC<{ readonly text: string }> = ({ text }) => {
+const Headline: React.FC<{
+  readonly text: string;
+  readonly fontSize: number;
+}> = ({ text, fontSize }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -69,7 +74,7 @@ const Headline: React.FC<{ readonly text: string }> = ({ text }) => {
           maxWidth: HEADLINE_MAX_WIDTH,
           fontFamily: FONT_FAMILY,
           fontWeight: 900,
-          fontSize: HEADLINE_FONT_SIZE,
+          fontSize,
           lineHeight: HEADLINE_LINE_HEIGHT,
           letterSpacing,
           color: TEXT_COLOR,
@@ -107,6 +112,7 @@ const Subline: React.FC<{ readonly text: string }> = ({ text }) => {
 export const PorscheHook: React.FC<PorscheHookProps> = ({
   headlineText = HEADLINE_TEXT,
   sublineText = SUBLINE_TEXT,
+  headlineFontSize = HEADLINE_FONT_SIZE,
 }) => {
   return (
     <AbsoluteFill style={{ backgroundColor: BACKGROUND_COLOR }}>
@@ -114,7 +120,7 @@ export const PorscheHook: React.FC<PorscheHookProps> = ({
         from={HEADLINE_START}
         durationInFrames={HEADLINE_END - HEADLINE_START}
       >
-        <Headline text={headlineText} />
+        <Headline text={headlineText} fontSize={headlineFontSize} />
         <LightStreak />
       </Sequence>
 

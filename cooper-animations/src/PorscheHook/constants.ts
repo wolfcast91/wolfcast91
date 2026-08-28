@@ -20,9 +20,30 @@ export const STREAK_START = 3;
 export const STREAK_DURATION = 12;
 
 // --- Copy ----------------------------------------------------------------
-// Line breaks are explicit so the layout never reflows mid-animation.
-export const HEADLINE_TEXT = "I WILL GIVE\nAWAY MY\nDREAM CAR!";
-export const SUBLINE_TEXT = "The problem?";
+// Line breaks are explicit so the layout never reflows mid-animation, and the
+// headline size travels with the copy because line lengths differ per language.
+export type HookCopy = {
+  readonly headline: string;
+  readonly subline: string;
+  readonly headlineFontSize: number;
+};
+
+export const COPY_EN: HookCopy = {
+  headline: "I WILL GIVE\nAWAY MY\nDREAM CAR!",
+  subline: "The problem?",
+  headlineFontSize: 122,
+};
+
+export const COPY_DE: HookCopy = {
+  headline: "ICH VERSCHENKE\nMEIN TRAUMAUTO!",
+  subline: "Das Problem?",
+  // Smaller than the EN cut: the longest DE line is 15 characters, and the
+  // spring overshoot briefly scales the headline ~13% past its final size.
+  headlineFontSize: 86,
+};
+
+export const HEADLINE_TEXT = COPY_EN.headline;
+export const SUBLINE_TEXT = COPY_EN.subline;
 
 // --- Colors --------------------------------------------------------------
 export const BACKGROUND_COLOR = "#000000"; // pure black for clean compositing
@@ -30,7 +51,7 @@ export const TEXT_COLOR = "#FFFFFF";
 export const STREAK_COLOR = "#FFFFFF";
 
 // --- Type ----------------------------------------------------------------
-export const HEADLINE_FONT_SIZE = 122;
+export const HEADLINE_FONT_SIZE = COPY_EN.headlineFontSize;
 export const HEADLINE_LINE_HEIGHT = 1.05;
 export const HEADLINE_LETTER_SPACING = -6;
 export const HEADLINE_MAX_WIDTH = 960; // px, inside the 1080 frame
