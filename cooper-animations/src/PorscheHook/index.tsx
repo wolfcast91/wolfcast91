@@ -1,23 +1,23 @@
 import React from "react";
-import {
-  AbsoluteFill,
-  interpolate,
-  Sequence,
-  spring,
-  useCurrentFrame,
-  useVideoConfig,
-} from "remotion";
+import { AbsoluteFill, Sequence } from "remotion";
+import { FONT_FAMILY } from "../shared/font";
+import { ImpactHeadline } from "../shared/ImpactHeadline";
+import { LightStreak } from "../shared/LightStreak";
 import {
   BACKGROUND_COLOR,
   HEADLINE_END,
   HEADLINE_FONT_SIZE,
   HEADLINE_LETTER_SPACING,
   HEADLINE_LINE_HEIGHT,
-  HEADLINE_MAX_WIDTH,
   HEADLINE_SCALE_FROM,
   HEADLINE_SPRING_CONFIG,
   HEADLINE_START,
   HEADLINE_TEXT,
+  STREAK_ANGLE,
+  STREAK_DURATION,
+  STREAK_PEAK_OPACITY,
+  STREAK_START,
+  STREAK_WIDTH,
   SUBLINE_END,
   SUBLINE_FONT_SIZE,
   SUBLINE_LETTER_SPACING,
@@ -25,8 +25,6 @@ import {
   SUBLINE_TEXT,
   TEXT_COLOR,
 } from "./constants";
-import { FONT_FAMILY } from "./font";
-import { LightStreak } from "./LightStreak";
 
 export type PorscheHookProps = {
   readonly headlineText?: string;
@@ -35,67 +33,18 @@ export type PorscheHookProps = {
   readonly headlineFontSize?: number;
 };
 
-const centered: React.CSSProperties = {
-  justifyContent: "center",
-  alignItems: "center",
-  textAlign: "center",
-};
-
-const Headline: React.FC<{
-  readonly text: string;
-  readonly fontSize: number;
-}> = ({ text, fontSize }) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-
-  // Under-damped spring => the text punches past 1 and settles back.
-  const progress = spring({
-    frame,
-    fps,
-    config: HEADLINE_SPRING_CONFIG,
-  });
-
-  // No fade: opacity stays at 1 from frame 0, only the scale sells the impact.
-  const scale = interpolate(progress, [0, 1], [HEADLINE_SCALE_FROM, 1]);
-
-  // Letters snap tight as the word lands, which reads as extra weight.
-  const letterSpacing = interpolate(
-    progress,
-    [0, 1],
-    [HEADLINE_LETTER_SPACING + 18, HEADLINE_LETTER_SPACING],
-    { extrapolateRight: "clamp" },
-  );
-
-  return (
-    <AbsoluteFill style={centered}>
-      <h1
-        style={{
-          margin: 0,
-          maxWidth: HEADLINE_MAX_WIDTH,
-          fontFamily: FONT_FAMILY,
-          fontWeight: 900,
-          fontSize,
-          lineHeight: HEADLINE_LINE_HEIGHT,
-          letterSpacing,
-          color: TEXT_COLOR,
-          textTransform: "uppercase",
-          whiteSpace: "pre", // explicit line breaks only => no reflow
-          transform: `scale(${scale})`,
-        }}
-      >
-        {text}
-      </h1>
-    </AbsoluteFill>
-  );
-};
-
 const Subline: React.FC<{ readonly text: string }> = ({ text }) => {
   return (
-    <AbsoluteFill style={centered}>
+    <AbsoluteFill
+      style={{
+        justifyContent: "center",
+        alignItems: "center",
+        textAlign: "center",
+      }}
+    >
       <h2
         style={{
           margin: 0,
-          maxWidth: HEADLINE_MAX_WIDTH,
           fontFamily: FONT_FAMILY,
           fontWeight: 900,
           fontSize: SUBLINE_FONT_SIZE,
@@ -120,8 +69,22 @@ export const PorscheHook: React.FC<PorscheHookProps> = ({
         from={HEADLINE_START}
         durationInFrames={HEADLINE_END - HEADLINE_START}
       >
-        <Headline text={headlineText} fontSize={headlineFontSize} />
-        <LightStreak />
+        <ImpactHeadline
+          text={headlineText}
+          fontSize={headlineFontSize}
+          color={TEXT_COLOR}
+          lineHeight={HEADLINE_LINE_HEIGHT}
+          letterSpacing={HEADLINE_LETTER_SPACING}
+          scaleFrom={HEADLINE_SCALE_FROM}
+          springConfig={HEADLINE_SPRING_CONFIG}
+        />
+        <LightStreak
+          startFrame={STREAK_START}
+          durationInFrames={STREAK_DURATION}
+          width={STREAK_WIDTH}
+          angle={STREAK_ANGLE}
+          peakOpacity={STREAK_PEAK_OPACITY}
+        />
       </Sequence>
 
       {/* Hard cut, no crossfade. */}

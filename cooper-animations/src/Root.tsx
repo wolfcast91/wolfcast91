@@ -2,6 +2,12 @@ import "./index.css";
 import { Composition } from "remotion";
 import { HelloWorld } from "./HelloWorld";
 import { Logo } from "./HelloWorld/Logo";
+import { ExpectationReality } from "./ExpectationReality";
+import {
+  COPY_DE as ER_COPY_DE,
+  COPY_EN as ER_COPY_EN,
+  DURATION_IN_FRAMES as ER_DURATION_IN_FRAMES,
+} from "./ExpectationReality/constants";
 import { PorscheHook } from "./PorscheHook";
 import {
   COPY_DE,
@@ -29,6 +35,35 @@ export const RemotionRoot: React.FC = () => {
           headlineText: COPY_EN.headline,
           sublineText: COPY_EN.subline,
           headlineFontSize: COPY_EN.headlineFontSize,
+        }}
+      />
+
+      {/* Two-card hook: npx remotion render ExpectationReality */}
+      <Composition
+        id="ExpectationReality"
+        component={ExpectationReality}
+        durationInFrames={ER_DURATION_IN_FRAMES}
+        fps={FPS}
+        width={WIDTH}
+        height={HEIGHT}
+        defaultProps={{
+          cardOneText: ER_COPY_EN.cardOne,
+          cardTwoText: ER_COPY_EN.cardTwo,
+          fontSize: ER_COPY_EN.fontSize,
+        }}
+      />
+
+      <Composition
+        id="ExpectationRealityDE"
+        component={ExpectationReality}
+        durationInFrames={ER_DURATION_IN_FRAMES}
+        fps={FPS}
+        width={WIDTH}
+        height={HEIGHT}
+        defaultProps={{
+          cardOneText: ER_COPY_DE.cardOne,
+          cardTwoText: ER_COPY_DE.cardTwo,
+          fontSize: ER_COPY_DE.fontSize,
         }}
       />
 
