@@ -1,0 +1,27 @@
+# macOS
+.DS_Store
+._*
+
+# Node / build
+node_modules/
+out/
+build/
+dist/
+
+# Remotion render output
+cooper-animations/out/
+
+# Raw video footage must never be committed to this repo.
+# Footage lives on the external drive at /Volumes/holdmydata/camera/.
+*.mp4
+*.mov
+*.m4v
+*.avi
+*.mkv
+*.mts
+*.m2ts
+*.webm
+# extracted frames / contact sheets from cataloguing
+frames/
+sheets/
+*.frames/
