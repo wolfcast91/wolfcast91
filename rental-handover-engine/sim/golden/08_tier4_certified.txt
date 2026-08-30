@@ -1,0 +1,190 @@
+================================================================================================
+  TIER 4 - THE CATEGORY THAT CANNOT BE AUTOMATED, AND SAYS SO
+  Mobile crane at a professional depot: contract, certification, logged operator
+================================================================================================
+  scenario      tier4_certified
+  seed world    world
+  clock start   2026-03-01T08:00:00Z
+  ruleset hash  fce31abef79c24b1f93bf58295be7199fe70d8625ceb3e8c55b34272250ce049
+
+    Cranes and forklifts are not an edge case of the hands-free model, they are a genuine category split, and the ruleset encodes that at the highest precedence in the table: requires_license outranks everything. Nobody is putting a 30-tonne Liebherr behind a PIN. The platform's value here is inventory visibility, contract execution and financing - not automation - and the tier system says that out loud instead of pretending otherwise.
+
+SEED WORLD LOADED
+------------------------
+  users          8
+  locations      6
+  partner nodes  2
+  items          28
+  events so far  88
+
+ITEM - Liebherr LTM 1030
+------------------------
+  item_id            itm_8fea389cf42b
+  owner              lena
+  category           mobile_crane
+  state              available
+  classified tier    4 (row R01)
+  effective tier     4
+  replacement value  280000,00 EUR
+  purchase price     310000,00 EUR
+  day rate           1450,00 EUR
+  attributes         accessory_count=few, enclosable=false, fragility=robust, has_fixed_location=true, partner_node_available=false, requires_license=true, value_band=very_high, weight_class=machine_lift
+  clean handovers    0
+  item trust         500
+  citation           tier_rules.yaml v3 row R01 (ruleset fce31abe)
+
+HANDOVER PLAN - Tier 4: Certified / Licensed
+--------------------------------------------
+  * per tier_rules.yaml v3 row R01 (ruleset fce31abe)
+
+  #  actor        step                                                  logs                                                                                              
+  -  -----------  ----------------------------------------------------  --------------------------------------------------------------------------------------------------
+  1  renter       Request machine and rental window (B2B account only)  item_id, renter_id, window_start_utc, window_end_utc, quoted_premium_cents                        
+  2  system       Verify operator certification against required set    operator_id, required_certificates, presented_certificates, verification_result                   
+  3  both         Execute rental contract and liability annex           contract_id, liability_annex_id, signed_by_owner, signed_by_renter                                
+  4  depot_staff  Depot releases machine against logged operator ID     location_id, pin_used, access_result, operator_id                                                 
+  5  depot_staff  Staff-run inspection record (DGUV-style checklist)    report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id, inspection_checklist_id
+  6  depot_staff  Machine returned to depot, staff intake inspection    location_id, gps_confirmed, operator_id                                                           
+  7  depot_staff  Staff post-rental inspection record                   report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id, inspection_checklist_id
+  8  system       Close contract, settle, file inspection record        revoked_pin, settled_cents, trust_delta_renter, trust_delta_item                                  
+
+  [1/11] Anke's firm requests the crane for a two-day lift
+        actor: renter         clock: 2026-03-01T08:00:00Z
+        - rental rnt_c65aa556c7d7
+        - 2 day(s), rent 290000 cents
+        - premium 25750 cents, deposit 250000 cents
+        - risk flag: high_value_new_renter (value_band in [high, very_high] and user_trust < 650)
+        + logged: RiskFlagRaised, ItemReserved, InsuranceQuoted, InsuranceBound
+        > 25750 cents, because insurance_rates.yaml v2 (ruleset fce31abe) cell 'very_high|4|fair|days_3'
+
+RENTAL
+------------------------
+  rental_id  rnt_c65aa556c7d7
+  state      reserved
+  tier       4
+  window     2026-03-04T06:00:00Z -> 2026-03-06T06:00:00Z
+  rent       2900,00 EUR
+  premium    257,50 EUR
+  deposit    2500,00 EUR
+  coverage   basic
+  insurance  bound
+  policy     pol_f28ddd667dcc
+  settled    -
+
+  Certification is a set-membership test, not a judgement. The nominated operator is one certificate short, and the command is refused with the missing certificate named.
+
+  [2/11] First operator: certification incomplete - expect refusal
+        actor: system         clock: 2026-03-01T08:00:00Z
+        ! REJECTED (as the scenario expects): operator tobi is missing required certificate(s): ['dguv_v3_electrical', 'lift_plan_signoff']
+
+  [3/11] Second operator holds the full set
+        actor: system         clock: 2026-03-01T08:00:00Z
+        - operator lena holds crane_operator_class_b, dguv_v3_electrical, lift_plan_signoff, medical_g25
+        - certification accepted
+        + logged: CertificationVerified
+
+  [4/11] Rental contract and DGUV liability annex signed
+        actor: both           clock: 2026-03-01T08:00:00Z
+        - contract ctr_b406775824f4 executed
+        - liability annex ctr_b406775824f4-annex-dguv3 signed by both parties
+        + logged: ContractExecuted
+
+  [5/11] Depot collection reference issued
+        actor: system         clock: 2026-03-01T08:00:00Z
+        - staffed credential 496758 valid 2026-03-04T06:00:00Z -> 2026-03-06T06:00:00Z
+        - derived from sha256(rental_id=rnt_c65aa556c7d7, location_id=loc_24ebc94fe7b1, valid_from_epoch=1772604000)
+        + logged: AccessGranted
+
+  ~ clock advanced to 2026-03-04T06:10:00Z
+
+  [6/11] Depot inspection record at release
+        actor: depot_staff    clock: 2026-03-04T06:10:00Z
+        - report cnd_0b75ad2032a0 (inspection), 0 tag(s), 5 photo(s)
+        + logged: ConditionReportSubmitted, TrustSignalRecorded, TrustSignalRecorded, ConditionDiffComputed
+        > damage_taxonomy.yaml v3 (ruleset fce31abe)
+
+  [7/11] Depot releases the machine against the logged operator id
+        actor: depot_staff    clock: 2026-03-04T06:10:00Z
+        - credential accepted (accepted)
+        - item collected
+        + logged: AccessCodeValidated, ItemPickedUp
+
+  ~ clock advanced to 2026-03-06T05:00:00Z
+
+  [8/11] Crane returned to the depot
+        actor: renter         clock: 2026-03-06T05:00:00Z
+        - returned on time
+        + logged: ItemReturnInitiated, TrustSignalRecorded
+
+  [9/11] Depot intake inspection on return
+        actor: depot_staff    clock: 2026-03-06T05:00:00Z
+        - report cnd_ad1bc359bb5b (post), 1 tag(s), 5 photo(s)
+        - NEW SINCE LAST RENTER: fuel_not_refilled [minor]
+        + logged: ConditionReportSubmitted, TrustSignalRecorded, TrustSignalRecorded, ConditionDiffComputed, TrustSignalRecorded
+        > damage_taxonomy.yaml v3 (ruleset fce31abe)
+
+  [10/11] Depot claims the refuelling shortfall
+        actor: owner          clock: 2026-03-06T05:00:00Z
+        - damage claimed: fuel_not_refilled
+        + logged: DamageReported, TrustSignalRecorded
+
+  [11/11] Settled against the deposit; claim waived
+        actor: owner          clock: 2026-03-06T05:00:00Z
+        - owner waived the claim
+        - settled 315750 cents
+        + logged: DamageWaived, RentalClosed, TrustSignalRecorded
+
+CONDITION CHAIN
+------------------------
+  #  phase       logged at             by         tags on record     new                 report          
+  -  ----------  --------------------  ---------  -----------------  ------------------  ----------------
+  0  inspection  2026-03-04T06:10:00Z  depot_kai  (none)                                 cnd_0b75ad2032a0
+  1  post        2026-03-06T05:00:00Z  depot_kai  fuel_not_refilled  +fuel_not_refilled  cnd_ad1bc359bb5b
+
+RENTAL
+------------------------
+  rental_id  rnt_c65aa556c7d7
+  state      closed
+  tier       4
+  window     2026-03-04T06:00:00Z -> 2026-03-06T06:00:00Z
+  rent       2900,00 EUR
+  premium    257,50 EUR
+  deposit    2500,00 EUR
+  coverage   basic
+  insurance  bound
+  policy     pol_f28ddd667dcc
+  settled    3157,50 EUR
+
+EVENT LOG (tail)
+------------------------
+  seq  clock (UTC)           event                     key payload                                                     
+  ---  --------------------  ------------------------  ----------------------------------------------------------------
+  101  2026-03-04T06:10:00Z  AccessCodeValidated       rental_id=rnt_c65aa556c7d7, validation_result=accepted          
+  102  2026-03-04T06:10:00Z  ItemPickedUp              item_id=itm_8fea389cf42b, rental_id=rnt_c65aa556c7d7            
+  103  2026-03-06T05:00:00Z  ItemReturnInitiated       item_id=itm_8fea389cf42b, rental_id=rnt_c65aa556c7d7            
+  104  2026-03-06T05:00:00Z  TrustSignalRecorded       signal=ReturnedOnTime                                           
+  105  2026-03-06T05:00:00Z  ConditionReportSubmitted  item_id=itm_8fea389cf42b, rental_id=rnt_c65aa556c7d7, report_id=
+  106  2026-03-06T05:00:00Z  TrustSignalRecorded       signal=ConditionReportSubmitted                                 
+  107  2026-03-06T05:00:00Z  TrustSignalRecorded       signal=ConditionReportSubmitted                                 
+  108  2026-03-06T05:00:00Z  ConditionDiffComputed     item_id=itm_8fea389cf42b, report_id=cnd_ad1bc359bb5b            
+  109  2026-03-06T05:00:00Z  TrustSignalRecorded       signal=NewDamageAppeared                                        
+  110  2026-03-06T05:00:00Z  DamageReported            item_id=itm_8fea389cf42b, rental_id=rnt_c65aa556c7d7            
+  111  2026-03-06T05:00:00Z  TrustSignalRecorded       signal=DamageReportedAgainstRenter                              
+  112  2026-03-06T05:00:00Z  DamageWaived              item_id=itm_8fea389cf42b, rental_id=rnt_c65aa556c7d7            
+  113  2026-03-06T05:00:00Z  RentalClosed              item_id=itm_8fea389cf42b, premium_cents=25750, rental_id=rnt_c65
+  114  2026-03-06T05:00:00Z  TrustSignalRecorded       signal=RentalClosedWithDamageWaived                             
+
+FINAL STATE
+------------------------
+  events in log        114
+  log hash             57bfca4a0ba10666fa93f07bb66402dff868cb556de266ea166a29a1fdc5961c
+  rentals              1 rnt_c65aa5=closed
+  items not available  (none)
+  open disputes        0
+  purchase offers      0
+
+REPLAY CHECK
+------------------------
+  projection fingerprint        2e351c4ea282deef8c61821fb57751f9e84e7dbd3128cff52fa64cb4afe63a6a
+  rebuilt-from-log fingerprint  2e351c4ea282deef8c61821fb57751f9e84e7dbd3128cff52fa64cb4afe63a6a
+  identical                     YES

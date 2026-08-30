@@ -1,0 +1,114 @@
+================================================================================================
+  HARD RULES, NOT RISK SCORES
+  Every refusal names the exact rule that fired
+================================================================================================
+  scenario      risk_refusal
+  seed world    world
+  clock start   2026-03-01T08:00:00Z
+  ruleset hash  fce31abef79c24b1f93bf58295be7199fe70d8625ceb3e8c55b34272250ce049
+
+    There is no fraud model here and there never will be. There is a list of boolean rules in trust_weights.yaml, each with a severity of `block` or `review`, and every flag that fires is written to the log carrying the literal rule text. That is the difference between "the system declined you" and "you were declined because id_verified == false". An insurance partner needs the second kind before they will underwrite anything.
+
+SEED WORLD LOADED
+------------------------
+  users          8
+  locations      6
+  partner nodes  2
+  items          28
+  events so far  88
+
+  Rico registered but never completed identity verification. He tries to reserve a 4200 EUR e-bike.
+
+  [1/2] Unverified renter attempts a high-value reservation
+        actor: renter         clock: 2026-03-01T08:00:00Z
+        ! REJECTED (as the scenario expects): reservation blocked by risk flag(s) ['unverified_identity'] (trust_weights.yaml v4 (ruleset fce31abe))
+
+RISK FLAGS
+------------------------
+  seq  subject  flag                   rule that fired                                       severity
+  ---  -------  ---------------------  ----------------------------------------------------  --------
+  89   rico     unverified_identity    id_verified == false                                  block   
+  90   rico     high_value_new_renter  value_band in [high, very_high] and user_trust < 650  review  
+
+  Three flags fired at once. Two are `review` and would not have stopped him; unverified_identity is `block`, and it did. Note that the flags are logged even though the command was refused - a refusal is a fact worth keeping.
+
+  Now a verified renter with an ordinary score reaching for the same e-bike. high_value_new_renter is a `review` flag, so the reservation proceeds and the flag rides along with it.
+
+  [2/2] Verified renter, same high-value item
+        actor: renter         clock: 2026-03-01T08:00:00Z
+        - rental rnt_6b32ae6619b7
+        - 2 day(s), rent 9800 cents
+        - premium 5950 cents, deposit 50000 cents
+        - risk flag: high_value_new_renter (value_band in [high, very_high] and user_trust < 650)
+        + logged: RiskFlagRaised, ItemReserved, InsuranceQuoted, InsuranceBound
+        > 5950 cents, because insurance_rates.yaml v2 (ruleset fce31abe) cell 'high|3|fair|days_3'
+
+RENTAL
+------------------------
+  rental_id  rnt_6b32ae6619b7
+  state      reserved
+  tier       3
+  window     2026-03-02T08:00:00Z -> 2026-03-04T08:00:00Z
+  rent       98,00 EUR
+  premium    59,50 EUR
+  deposit    500,00 EUR
+  coverage   full
+  insurance  bound
+  policy     pol_c39de382a63e
+  settled    -
+
+RISK FLAGS
+------------------------
+  seq  subject  flag                   rule that fired                                       severity
+  ---  -------  ---------------------  ----------------------------------------------------  --------
+  89   rico     unverified_identity    id_verified == false                                  block   
+  90   rico     high_value_new_renter  value_band in [high, very_high] and user_trust < 650  review  
+  91   karim    high_value_new_renter  value_band in [high, very_high] and user_trust < 650  review  
+
+  The premium reflects the same facts. A `new`-band renter on a very-high value item at Tier 3 is the most expensive cell in the table, and you can point at the exact cell.
+
+ITEM - Riese & Mueller Charger
+------------------------------
+  item_id            itm_3d387a6e291b
+  owner              karim
+  category           ebike
+  state              reserved
+  classified tier    3 (row R05)
+  effective tier     3
+  replacement value  4200,00 EUR
+  purchase price     4890,00 EUR
+  day rate           49,00 EUR
+  attributes         accessory_count=few, enclosable=false, fragility=robust, has_fixed_location=false, partner_node_available=false, requires_license=false, value_band=high, weight_class=two_person
+  clean handovers    0
+  item trust         500
+  citation           tier_rules.yaml v3 row R05 (ruleset fce31abe)
+
+EVENT LOG (tail)
+------------------------
+  seq  clock (UTC)           event            key payload                                                 
+  ---  --------------------  ---------------  ------------------------------------------------------------
+  85   2026-03-01T08:00:00Z  ItemListed       item_id=itm_731ef088f9a7, tier=3                            
+  86   2026-03-01T08:00:00Z  TierAssigned     item_id=itm_731ef088f9a7, tier=3                            
+  87   2026-03-01T08:00:00Z  ItemListed       item_id=itm_b7526fca639f, tier=3                            
+  88   2026-03-01T08:00:00Z  TierAssigned     item_id=itm_b7526fca639f, tier=3                            
+  89   2026-03-01T08:00:00Z  RiskFlagRaised   flag_id=unverified_identity                                 
+  90   2026-03-01T08:00:00Z  RiskFlagRaised   flag_id=high_value_new_renter                               
+  91   2026-03-01T08:00:00Z  RiskFlagRaised   flag_id=high_value_new_renter                               
+  92   2026-03-01T08:00:00Z  ItemReserved     item_id=itm_3d387a6e291b, rental_id=rnt_6b32ae6619b7, tier=3
+  93   2026-03-01T08:00:00Z  InsuranceQuoted  premium_cents=5950, rental_id=rnt_6b32ae6619b7              
+  94   2026-03-01T08:00:00Z  InsuranceBound   premium_cents=5950, rental_id=rnt_6b32ae6619b7              
+
+FINAL STATE
+------------------------
+  events in log        94
+  log hash             ac0f5738a919363856345407c3263684b93670933a7f3d3b363abca1ebd0d815
+  rentals              1 rnt_6b32ae=reserved
+  items not available  Riese & Mueller Charger=reserved
+  open disputes        0
+  purchase offers      0
+
+REPLAY CHECK
+------------------------
+  projection fingerprint        084225d35f5106fd4c91967fe19968a64b308d483d797089d19527004bc0f3b9
+  rebuilt-from-log fingerprint  084225d35f5106fd4c91967fe19968a64b308d483d797089d19527004bc0f3b9
+  identical                     YES

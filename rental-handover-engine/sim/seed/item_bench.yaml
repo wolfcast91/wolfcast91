@@ -1,0 +1,45 @@
+# sim/seed/item_bench.yaml
+# The 30-item classification bench. Deliberately mixes the obvious with the
+# genuinely ambiguous, because a tier system that only handles drills is not a
+# tier system. Each entry records the expected tier AND why, so a rule change
+# that moves an item shows up as a readable diff rather than a number changing.
+#
+# tests/test_classifier.py byte-compares the rendered result against
+# artifacts/item_bench.txt.
+
+bench_version: 2
+items:
+  - {ref: cordless_drill,   category: drill_driver,      expect_tier: 1, note: "The canonical case: boxable, hand-carried, low value."}
+  - {ref: wallpaper_steamer,category: wallpaper_steamer, expect_tier: 1, note: "Cheap, boxable, nobody disputes a steamer."}
+  - {ref: pressure_washer,  category: pressure_washer,   expect_tier: 1, note: "Two-person lift but still fits a large lockbox."}
+  - {ref: tile_saw,         category: tile_saw,          expect_tier: 1, note: "Mid value, few parts - the automation sweet spot."}
+  - {ref: projector,        category: projector,         expect_tier: 1, note: "AMBIGUOUS: sits under an optics root, but a sealed LED projector is robust, so it stays Tier 1 where a DSLR does not."}
+  - {ref: chainsaw,         category: chainsaw,          expect_tier: 1, note: "AMBIGUOUS: dangerous, but danger is not a handover attribute. No licence is required in DE for private use, so it automates."}
+  - {ref: generator,        category: generator,         expect_tier: 1, note: "Portable inverter generator, boxable."}
+  - {ref: camping_gear,     category: camping_set,       expect_tier: 1, note: "AMBIGUOUS: many detachable parts, but R06 deliberately excludes low-value kits, so a tent bag does not force a meetup."}
+  - {ref: kayak,            category: kayak,             expect_tier: 2, note: "AMBIGUOUS: not fragile, not licensed, not valuable enough for Tier 3 - it is simply too big for a box."}
+  - {ref: cement_mixer,     category: cement_mixer,      expect_tier: 2, note: "Fixed to a yard; load-out in place."}
+  - {ref: scaffolding,      category: scaffolding,       expect_tier: 2, note: "AMBIGUOUS: six detachable parts would suggest Tier 3, but a parts count verified in a marked bay is a Tier 2 checklist."}
+  - {ref: ladder,           category: ladder,            expect_tier: 2, note: "Yard item, low value."}
+  - {ref: party_tent,       category: party_tent,        expect_tier: 2, note: "AMBIGUOUS: same reasoning as scaffolding - fixed location beats parts count."}
+  - {ref: floor_sander,     category: floor_sander,      expect_tier: 2, note: "Machine-lift weight forces yard load-out."}
+  - {ref: snow_blower,      category: snow_blower,       expect_tier: 2, note: "Machine-lift, seasonal, robust."}
+  - {ref: plate_compactor,  category: plate_compactor,   expect_tier: 2, note: "Site equipment, fixed location."}
+  - {ref: wheelbarrow,      category: wheelbarrow,       expect_tier: 2, note: "Trivially cheap but physically unboxable."}
+  - {ref: engine_hoist,     category: engine_hoist,      expect_tier: 2, note: "Material handling, machine-lift, fixed location."}
+  - {ref: pallet_jack,      category: pallet_jack,       expect_tier: 2, note: "Machine-lift, lives at the yard."}
+  - {ref: dust_extractor,   category: dust_extractor,    expect_tier: 2, note: "Too large to box; the complementary partner to the tile saw."}
+  - {ref: dslr_three_lens,  category: dslr_kit,          expect_tier: 3, note: "Delicate optics plus a five-item accessory manifest. The archetypal Tier 3."}
+  - {ref: pa_system,        category: pa_system,         expect_tier: 3, note: "Delicate, high value, many parts - three reasons, one of which is enough."}
+  - {ref: drone,            category: drone,             expect_tier: 3, note: "Delicate and high value."}
+  - {ref: sewing_machine,   category: sewing_machine,    expect_tier: 3, note: "AMBIGUOUS: boxable and hand-carried, so it looks like Tier 1 - fragility is the only thing that moves it, and it graduates once proven."}
+  - {ref: ebike,            category: ebike,             expect_tier: 3, note: "AMBIGUOUS: robust and unboxable, which would say Tier 2, but high value plus detachable parts outranks that at precedence 50."}
+  - {ref: trailer,          category: trailer,           expect_tier: 3, note: "AMBIGUOUS: machine-lift would say Tier 2, but a road-legal trailer with straps and a spare is a value-plus-parts case."}
+  - {ref: guitar,           category: guitar,            expect_tier: 3, note: "Delicate instrument."}
+  - {ref: telescope,        category: telescope,         expect_tier: 3, note: "Delicate, high value, many parts."}
+  - {ref: laser_level,      category: laser_level,       expect_tier: 3, note: "AMBIGUOUS: a boxable hand tool, but a knocked rotary laser is a calibration bill, so fragility wins."}
+  - {ref: mini_excavator,   category: mini_excavator,    expect_tier: 4, note: "AMBIGUOUS: small enough that people assume it automates. Instruction and inspection duties are regulatory, so it cannot."}
+  - {ref: mobile_crane,     category: mobile_crane,      expect_tier: 4, note: "The category split made explicit: requires_license outranks everything."}
+  - {ref: forklift,         category: forklift,          expect_tier: 4, note: "Operator certification required."}
+  - {ref: carpet_cleaner_depot, category: carpet_cleaner, expect_tier: 5, overrides: {partner_node_available: true}, note: "AMBIGUOUS: identical machine, different custody. Consigning it to a partner node changes the tier - which is the point of grouping by mechanism, not item type."}
+  - {ref: drill_at_depot,   category: drill_driver,      expect_tier: 5, overrides: {partner_node_available: true}, note: "Even the canonical Tier 1 item becomes Tier 5 when the owner hands custody to a partner."}

@@ -8,8 +8,18 @@
 # `other_requires_human`, which is the single escape hatch and always routes out
 # of the automated path.
 
-ruleset_version: 2
+ruleset_version: 3
 schema: damage_taxonomy/1
+
+# The closed vocabulary of condition-report phases, and where each one sits in a
+# rental. `chain_position` is what the guards actually care about: a rental
+# cannot start without a `pre` report and cannot close without a `post` one.
+# This lives here, not in a tuple inside a reducer, because it is a rule.
+report_phases:
+  pre:            {chain_position: pre,  description: "Renter documents the item before taking it."}
+  partner_intake: {chain_position: pre,  description: "Partner staff document it at release (Tier 5)."}
+  inspection:     {chain_position: pre,  description: "Depot staff inspection record at release (Tier 4)."}
+  post:           {chain_position: post, description: "Documented after use, on return."}
 
 severity_scale:
   cosmetic:   {rank: 1, blocks_next_rental: false, description: "Visible, does not affect function or value materially."}

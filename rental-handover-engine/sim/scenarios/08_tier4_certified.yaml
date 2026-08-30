@@ -1,0 +1,114 @@
+id: tier4_certified
+title: "TIER 4 - THE CATEGORY THAT CANNOT BE AUTOMATED, AND SAYS SO"
+subtitle: "Mobile crane at a professional depot: contract, certification, logged operator"
+seed: world
+clock_start_utc: "2026-03-01T08:00:00Z"
+premise: >
+  Cranes and forklifts are not an edge case of the hands-free model, they are a
+  genuine category split, and the ruleset encodes that at the highest precedence
+  in the table: requires_license outranks everything. Nobody is putting a 30-tonne
+  Liebherr behind a PIN. The platform's value here is inventory visibility,
+  contract execution and financing - not automation - and the tier system says
+  that out loud instead of pretending otherwise.
+
+script:
+  - show: item
+    item: "@crane"
+  - show: plan
+    item: "@crane"
+
+  - cmd: ReserveItem
+    actor: renter
+    label: "Anke's firm requests the crane for a two-day lift"
+    as: r1
+    args: {item_id: "@crane", renter_handle: anke, window_start_utc: "2026-03-04T06:00:00Z", window_end_utc: "2026-03-06T06:00:00Z"}
+  - show: rental
+    rental: "@r1"
+
+  - note: >
+      Certification is a set-membership test, not a judgement. The nominated
+      operator is one certificate short, and the command is refused with the
+      missing certificate named.
+  - cmd: VerifyCertification
+    actor: system
+    label: "First operator: certification incomplete - expect refusal"
+    expect_rejection: true
+    args:
+      rental_id: "@r1"
+      operator_handle: tobi
+      presented_certificates: [crane_operator_class_b]
+      required_certificates: [crane_operator_class_b, dguv_v3_electrical, lift_plan_signoff]
+
+  - cmd: VerifyCertification
+    actor: system
+    label: "Second operator holds the full set"
+    args:
+      rental_id: "@r1"
+      operator_handle: lena
+      presented_certificates: [crane_operator_class_b, dguv_v3_electrical, lift_plan_signoff, medical_g25]
+      required_certificates: [crane_operator_class_b, dguv_v3_electrical, lift_plan_signoff]
+
+  - cmd: ExecuteContract
+    actor: both
+    label: "Rental contract and DGUV liability annex signed"
+    args: {rental_id: "@r1", signed_by_owner_handle: lena, signed_by_renter_handle: anke}
+
+  - cmd: GrantAccess
+    actor: system
+    label: "Depot collection reference issued"
+    args: {rental_id: "@r1"}
+
+  - advance_to: "2026-03-04T06:10:00Z"
+  - cmd: SubmitConditionReport
+    actor: depot_staff
+    label: "Depot inspection record at release"
+    args:
+      rental_id: "@r1"
+      phase: inspection
+      submitted_by_handle: depot_kai
+      damage_tags: []
+      photo_descriptors:
+        front: "boom stowed, outriggers retracted"
+        rear: "counterweight stack"
+        serial_plate: "SN-CRN-0023"
+        hour_meter: "4188 h"
+        inspection_sticker: "valid to 2027-01"
+  - cmd: OpenLockbox
+    actor: depot_staff
+    label: "Depot releases the machine against the logged operator id"
+    args: {rental_id: "@r1"}
+
+  - advance_to: "2026-03-06T05:00:00Z"
+  - cmd: ReturnItem
+    actor: renter
+    label: "Crane returned to the depot"
+    args: {rental_id: "@r1"}
+  - cmd: SubmitConditionReport
+    actor: depot_staff
+    label: "Depot intake inspection on return"
+    args:
+      rental_id: "@r1"
+      phase: post
+      submitted_by_handle: depot_kai
+      damage_tags: [fuel_not_refilled]
+      photo_descriptors:
+        front: "boom stowed"
+        rear: "counterweight stack"
+        serial_plate: "SN-CRN-0023"
+        hour_meter: "4203 h"
+        inspection_sticker: "valid to 2027-01"
+  - cmd: ReportDamage
+    actor: owner
+    label: "Depot claims the refuelling shortfall"
+    args: {rental_id: "@r1", reported_by_handle: lena, tags: [fuel_not_refilled]}
+  - cmd: WaiveDamage
+    actor: owner
+    label: "Settled against the deposit; claim waived"
+    args: {rental_id: "@r1", waived_by_handle: lena}
+
+  - show: chain
+    item: "@crane"
+  - show: rental
+    rental: "@r1"
+  - show: log
+    limit: 14

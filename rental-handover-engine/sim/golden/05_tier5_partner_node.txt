@@ -1,0 +1,162 @@
+================================================================================================
+  TIER 5 - THE HARDWARE STORE AS A HANDOVER NODE
+  Welding machine on consignment at Eisenwaren Schulz
+================================================================================================
+  scenario      tier5_partner_node
+  seed world    world
+  clock start   2026-03-01T08:00:00Z
+  ruleset hash  fce31abef79c24b1f93bf58295be7199fe70d8625ceb3e8c55b34272250ce049
+
+    Anke owns a welder but does not want strangers in her workshop. She consigns it to a hardware store two streets away. Custody sits with the partner, so the partner's intake check replaces the peer handover entirely - and note WHY the classifier said Tier 5: partner_node_available outranks everything except the regulatory rule. It is an owner's deliberate choice about custody, not a property of the welder.
+
+SEED WORLD LOADED
+------------------------
+  users          8
+  locations      6
+  partner nodes  2
+  items          28
+  events so far  88
+
+ITEM - Fronius TransSteel 2200
+------------------------------
+  item_id            itm_a2ef1fa0ac27
+  owner              anke
+  category           welder
+  state              available
+  classified tier    5 (row R02)
+  effective tier     5
+  replacement value  1850,00 EUR
+  purchase price     2190,00 EUR
+  day rate           44,00 EUR
+  attributes         accessory_count=few, enclosable=false, fragility=robust, has_fixed_location=false, partner_node_available=true, requires_license=false, value_band=mid, weight_class=two_person
+  clean handovers    0
+  item trust         500
+  citation           tier_rules.yaml v3 row R02 (ruleset fce31abe)
+
+HANDOVER PLAN - Tier 5: Depot / Partner Node
+--------------------------------------------
+  * per tier_rules.yaml v3 row R02 (ruleset fce31abe)
+
+  #  actor          step                                                      logs                                                                               
+  -  -------------  --------------------------------------------------------  -----------------------------------------------------------------------------------
+  1  renter         Reserve item held at partner node                         item_id, renter_id, window_start_utc, window_end_utc, quoted_premium_cents         
+  2  partner_staff  Partner confirms item present and matching last entry     partner_node_id, item_id, chain_match_declared, prev_report_id                     
+  3  system         Issue collection code for the partner counter or locker   location_id, access_type, pin, valid_from_utc, valid_until_utc                     
+  4  partner_staff  Partner-witnessed condition report at release             report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id          
+  5  partner_staff  Partner releases item against collection code             location_id, pin_used, access_result, partner_node_id                              
+  6  renter         Drop item back at the partner node                        location_id, gps_confirmed, partner_node_id                                        
+  7  partner_staff  Partner intake inspection on return                       report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id          
+  8  system         Revoke collection code, close rental, settle partner fee  revoked_pin, settled_cents, trust_delta_renter, trust_delta_item, partner_fee_cents
+
+  [1/8] Lena reserves the welder for a fabrication job
+        actor: renter         clock: 2026-03-01T08:00:00Z
+        - rental rnt_525c98d55cf0
+        - 3 day(s), rent 13200 cents
+        - premium 5300 cents, deposit 50000 cents
+        - risk flag: high_value_new_renter (value_band in [high, very_high] and user_trust < 650)
+        + logged: RiskFlagRaised, ItemReserved, InsuranceQuoted, InsuranceBound
+        > 5300 cents, because insurance_rates.yaml v2 (ruleset fce31abe) cell 'high|5|fair|days_3'
+
+  ~ clock advanced to 2026-03-02T07:30:00Z
+
+  Before any code is issued, the partner confirms the machine is physically present and matches the last entry in its condition chain. That check is what the platform is paying the intake fee for.
+
+  [2/8] Eisenwaren Schulz confirms custody and chain match
+        actor: partner_staff  clock: 2026-03-02T07:30:00Z
+        - Eisenwaren Schulz (hardware_store) confirms custody
+        - intake fee 450 cents
+        + logged: PartnerIntakeConfirmed
+
+  [3/8] Collection code issued for the partner counter
+        actor: system         clock: 2026-03-02T07:30:00Z
+        - depot credential 273974 valid 2026-03-02T08:00:00Z -> 2026-03-05T08:00:00Z
+        - derived from sha256(rental_id=rnt_525c98d55cf0, location_id=loc_a8c692e797a0, valid_from_epoch=1772438400)
+        + logged: AccessGranted
+
+  ~ clock advanced to 2026-03-02T09:20:00Z
+
+  [4/8] Partner-witnessed condition report at release
+        actor: partner_staff  clock: 2026-03-02T09:20:00Z
+        - report cnd_fbfa6ede41c7 (partner_intake), 0 tag(s), 4 photo(s)
+        + logged: ConditionReportSubmitted, TrustSignalRecorded, TrustSignalRecorded, ConditionDiffComputed
+        > damage_taxonomy.yaml v3 (ruleset fce31abe)
+
+  [5/8] Collection code presented, partner releases the machine
+        actor: partner_staff  clock: 2026-03-02T09:20:00Z
+        - credential accepted (accepted)
+        - item collected
+        + logged: AccessCodeValidated, ItemPickedUp
+
+  ~ clock advanced to 2026-03-04T16:00:00Z
+
+  [6/8] Lena drops the welder back at the counter
+        actor: renter         clock: 2026-03-04T16:00:00Z
+        - returned on time
+        + logged: ItemReturnInitiated, TrustSignalRecorded
+
+  [7/8] Partner intake inspection on return - mask strap has gone missing
+        actor: partner_staff  clock: 2026-03-04T16:00:00Z
+        - report cnd_b28ce0cb3892 (post), 1 tag(s), 4 photo(s)
+        - NEW SINCE LAST RENTER: consumable_depleted [cosmetic]
+        - MISSING: mask
+        + logged: ConditionReportSubmitted, TrustSignalRecorded, TrustSignalRecorded, ConditionDiffComputed, TrustSignalRecorded
+        > damage_taxonomy.yaml v3 (ruleset fce31abe)
+
+  [8/8] Return accepted despite the missing accessory being on record
+        actor: system         clock: 2026-03-04T16:00:00Z
+        - return accepted (with findings)
+        - settled 18500 cents
+        + logged: ReturnAccepted, AccessRevoked, RentalClosed, TrustSignalRecorded
+
+CONDITION CHAIN
+------------------------
+  #  phase           logged at             by         tags on record       new                   report          
+  -  --------------  --------------------  ---------  -------------------  --------------------  ----------------
+  0  partner_intake  2026-03-02T09:20:00Z  depot_kai  (none)                                     cnd_fbfa6ede41c7
+  1  post            2026-03-04T16:00:00Z  depot_kai  consumable_depleted  +consumable_depleted  cnd_b28ce0cb3892
+
+RENTAL
+------------------------
+  rental_id  rnt_525c98d55cf0
+  state      closed
+  tier       5
+  window     2026-03-02T08:00:00Z -> 2026-03-05T08:00:00Z
+  rent       132,00 EUR
+  premium    53,00 EUR
+  deposit    500,00 EUR
+  coverage   standard
+  insurance  bound
+  policy     pol_b5f9d1ee64e5
+  settled    185,00 EUR
+
+EVENT LOG (tail)
+------------------------
+  seq  clock (UTC)           event                     key payload                                                     
+  ---  --------------------  ------------------------  ----------------------------------------------------------------
+  100  2026-03-02T09:20:00Z  ItemPickedUp              item_id=itm_a2ef1fa0ac27, rental_id=rnt_525c98d55cf0            
+  101  2026-03-04T16:00:00Z  ItemReturnInitiated       item_id=itm_a2ef1fa0ac27, rental_id=rnt_525c98d55cf0            
+  102  2026-03-04T16:00:00Z  TrustSignalRecorded       signal=ReturnedOnTime                                           
+  103  2026-03-04T16:00:00Z  ConditionReportSubmitted  item_id=itm_a2ef1fa0ac27, rental_id=rnt_525c98d55cf0, report_id=
+  104  2026-03-04T16:00:00Z  TrustSignalRecorded       signal=ConditionReportSubmitted                                 
+  105  2026-03-04T16:00:00Z  TrustSignalRecorded       signal=ConditionReportSubmitted                                 
+  106  2026-03-04T16:00:00Z  ConditionDiffComputed     item_id=itm_a2ef1fa0ac27, report_id=cnd_b28ce0cb3892            
+  107  2026-03-04T16:00:00Z  TrustSignalRecorded       signal=NewDamageAppeared                                        
+  108  2026-03-04T16:00:00Z  ReturnAccepted            item_id=itm_a2ef1fa0ac27, rental_id=rnt_525c98d55cf0            
+  109  2026-03-04T16:00:00Z  AccessRevoked             rental_id=rnt_525c98d55cf0                                      
+  110  2026-03-04T16:00:00Z  RentalClosed              item_id=itm_a2ef1fa0ac27, premium_cents=5300, rental_id=rnt_525c
+  111  2026-03-04T16:00:00Z  TrustSignalRecorded       signal=RentalClosedWithDamageWaived                             
+
+FINAL STATE
+------------------------
+  events in log        111
+  log hash             d5c1918a09103eeddbccc3ecb207e21cab2ecaad6842b7aa99c006d35dae3815
+  rentals              1 rnt_525c98=closed
+  items not available  (none)
+  open disputes        0
+  purchase offers      0
+
+REPLAY CHECK
+------------------------
+  projection fingerprint        5f8ff3255a9dbee41f33a08892c309146b3b35757be41a954e4a19462ed425cc
+  rebuilt-from-log fingerprint  5f8ff3255a9dbee41f33a08892c309146b3b35757be41a954e4a19462ed425cc
+  identical                     YES

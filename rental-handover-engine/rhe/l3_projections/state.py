@@ -184,7 +184,8 @@ def _return_initiated(s, p, e) -> None:
 def _condition_report(s, p, e) -> None:
     report = {
         "report_id": p["report_id"], "item_id": p["item_id"], "rental_id": p["rental_id"],
-        "phase": p["phase"], "submitted_by": p["submitted_by"],
+        "phase": p["phase"], "chain_position": p["chain_position"],
+        "submitted_by": p["submitted_by"],
         "submitted_at_utc": e["clock_utc"], "event_seq": e["event_seq"],
         "damage_tags": p["damage_tags"], "photo_slots": p["photo_slots"],
         "photo_refs": p.get("photo_refs", []),
@@ -195,7 +196,9 @@ def _condition_report(s, p, e) -> None:
     s.condition_chains.setdefault(p["item_id"], []).append(p["report_id"])
     rental = s.rentals.get(p["rental_id"])
     if rental is not None:
-        key = "pre_report_id" if p["phase"] in ("pre", "partner_intake") else "post_report_id"
+        # chain_position was resolved from damage_taxonomy.yaml at command time
+        # and stamped on the event. The projection never re-decides it.
+        key = "pre_report_id" if p["chain_position"] == "pre" else "post_report_id"
         rental[key] = p["report_id"]
 
 

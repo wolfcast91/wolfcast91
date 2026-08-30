@@ -122,7 +122,13 @@ class Engine:
             "tier": rental["tier"],
             "renter_id_verified": renter["id_verified"],
             "has_overlapping_reservation": False,
-            "access_granted": grant is not None and not grant["revoked"],
+            # For a Tier 3 meetup no credential exists -- the counterparty IS
+            # the credential, and the rental reaching `access_granted` via
+            # MeetupConfirmed is what the guard is really asking about.
+            "access_granted": (
+                (grant is not None and not grant["revoked"])
+                or rental["state"] == "access_granted"
+            ),
             "pre_report_id": rental["pre_report_id"],
             "post_report_id": rental["post_report_id"],
             "now_epoch": self.clock.now_epoch(),
@@ -370,6 +376,13 @@ class Engine:
         item = self.state.items[rental["item_id"]]
         submitter = self._user_by_handle(c.submitted_by_handle)
         tags = condition.validate_tags(c.damage_tags, self.ruleset)
+        phases = self.ruleset.doc("damage_taxonomy")["report_phases"]
+        if c.phase not in phases:
+            raise CommandRejected(
+                f"unknown report phase {c.phase!r}; declared phases are {sorted(phases)} "
+                f"({self.ruleset.citation('damage_taxonomy')})"
+            )
+        chain_position = phases[c.phase]["chain_position"]
 
         chain = self.state.chain_for(item["item_id"])
         previous = chain[-1] if chain else None
@@ -387,7 +400,8 @@ class Engine:
         )
         self._emit("ConditionReportSubmitted", {
             "report_id": report_id, "item_id": item["item_id"], "rental_id": c.rental_id,
-            "phase": c.phase, "submitted_by": submitter["user_id"],
+            "phase": c.phase, "chain_position": chain_position,
+            "submitted_by": submitter["user_id"],
             "damage_tags": list(tags), "photo_slots": sorted(c.photo_descriptors),
             "photo_refs": photo_refs, "accessory_manifest": manifest,
             "prev_report_id": previous["report_id"] if previous else None,
@@ -441,8 +455,10 @@ class Engine:
                 self._trust_signal("user", signer, "ConditionReportCountersigned", report_id)
 
         notes = [f"report {report_id} ({c.phase}), {len(tags)} tag(s), {len(photo_refs)} photo(s)"]
-        if diff.appeared:
-            notes.append("NEW: " + ", ".join(f"{f.tag_id} [{f.severity}]" for f in diff.appeared))
+        if diff.appeared and previous is None:
+            notes.append("chain baseline: " + ", ".join(f"{f.tag_id} [{f.severity}]" for f in diff.appeared))
+        elif diff.appeared:
+            notes.append("NEW SINCE LAST RENTER: " + ", ".join(f"{f.tag_id} [{f.severity}]" for f in diff.appeared))
         if diff.confirmed:
             notes.append("confirmed from previous renter: " + ", ".join(f.tag_id for f in diff.confirmed))
         if diff.disappeared:
@@ -759,6 +775,91 @@ class Engine:
              f"{financing.rent_credited_cents} cents of rent credited against the price",
              f"ownership transferred to {offer['renter_id']}"))
 
+    def _verify_spatial_landmark(self, c: cmd.VerifySpatialLandmark) -> CommandResult:
+        rental = self._rental(c.rental_id)
+        item = self.state.items[rental["item_id"]]
+        location = self.state.locations[item["location_id"]]
+        if not location.get("spatial_instruction_id"):
+            raise CommandRejected(
+                f"location {location['label']!r} carries no spatial instruction to verify")
+        slot = location.get("landmark_photo_slot") or "landmark"
+        ref = self.photos.put(c.rental_id, slot, c.landmark_photo_descriptor, self.clock.now_utc())
+        self._emit("SpatialLandmarkVerified", {
+            "rental_id": c.rental_id,
+            "spatial_instruction_id": location["spatial_instruction_id"],
+            "landmark_photo_slot": slot, "landmark_photo_ref": ref.photo_ref,
+            "match_declared": c.match_declared,
+        })
+        if not c.match_declared:
+            raise CommandRejected(
+                "renter declares the landmark does not match; load-out halted and "
+                "the mismatch is on record")
+        return CommandResult("VerifySpatialLandmark", (), (
+            f"instruction: {location['spatial_instruction']}",
+            f"landmark matched, photographed into slot {slot!r}",
+        ))
+
+    def _confirm_partner_intake(self, c: cmd.ConfirmPartnerIntake) -> CommandResult:
+        rental = self._rental(c.rental_id)
+        item = self.state.items[rental["item_id"]]
+        staff = self._user_by_handle(c.confirmed_by_handle)
+        node_id = item.get("partner_node_id")
+        if not node_id:
+            raise CommandRejected(f"item {item['model_name']!r} is not held at a partner node")
+        node = self.state.partner_nodes[node_id]
+        chain = self.state.chain_for(item["item_id"])
+        self._emit("PartnerIntakeConfirmed", {
+            "rental_id": c.rental_id, "partner_node_id": node_id, "item_id": item["item_id"],
+            "confirmed_by": staff["user_id"], "chain_match_declared": c.chain_match_declared,
+            "prev_report_id": chain[-1]["report_id"] if chain else None,
+            "intake_fee_cents": node["intake_fee_cents"],
+        })
+        if not c.chain_match_declared:
+            raise CommandRejected(
+                "partner reports the item does not match its last chain entry; "
+                "release halted and the mismatch is on record")
+        return CommandResult("ConfirmPartnerIntake", (), (
+            f"{node['operator_name']} ({node['node_type']}) confirms custody",
+            f"intake fee {node['intake_fee_cents']} cents",
+        ))
+
+    def _verify_certification(self, c: cmd.VerifyCertification) -> CommandResult:
+        rental = self._rental(c.rental_id)
+        operator = self._user_by_handle(c.operator_handle)
+        required, presented = set(c.required_certificates), set(c.presented_certificates)
+        missing = sorted(required - presented)
+        self._emit("CertificationVerified", {
+            "rental_id": c.rental_id, "operator_id": operator["user_id"],
+            "required_certificates": sorted(required),
+            "presented_certificates": sorted(presented),
+            "missing_certificates": missing,
+            "verification_result": "rejected" if missing else "accepted",
+        })
+        if missing:
+            raise CommandRejected(
+                f"operator {c.operator_handle} is missing required certificate(s): {missing}")
+        return CommandResult("VerifyCertification", (), (
+            f"operator {c.operator_handle} holds {', '.join(sorted(presented))}",
+            "certification accepted",
+        ))
+
+    def _execute_contract(self, c: cmd.ExecuteContract) -> CommandResult:
+        rental = self._rental(c.rental_id)
+        owner = self._user_by_handle(c.signed_by_owner_handle)
+        renter = self._user_by_handle(c.signed_by_renter_handle)
+        contract_id = content_id("dispute", {
+            "rental_id": c.rental_id, "opened_by": owner["user_id"], "event_seq": self.log.next_seq,
+        }).replace("dsp_", "ctr_")
+        self._emit("ContractExecuted", {
+            "rental_id": c.rental_id, "contract_id": contract_id,
+            "liability_annex_id": f"{contract_id}-annex-dguv3",
+            "signed_by_owner": owner["user_id"], "signed_by_renter": renter["user_id"],
+        })
+        return CommandResult("ExecuteContract", (), (
+            f"contract {contract_id} executed",
+            f"liability annex {contract_id}-annex-dguv3 signed by both parties",
+        ))
+
     _HANDLERS = {
         "RegisterUser": _register_user,
         "RegisterLocation": _register_location,
@@ -778,4 +879,8 @@ class Engine:
         "DeclareLost": _declare_lost,
         "DetectPurchaseOpportunity": _detect_purchase_opportunity,
         "AcceptPurchaseOffer": _accept_purchase_offer,
+        "VerifySpatialLandmark": _verify_spatial_landmark,
+        "ConfirmPartnerIntake": _confirm_partner_intake,
+        "VerifyCertification": _verify_certification,
+        "ExecuteContract": _execute_contract,
     }

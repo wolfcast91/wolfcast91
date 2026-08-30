@@ -1,0 +1,350 @@
+================================================================================================
+  RENT-TO-TRY-THEN-BUY: THE BUSINESS MODEL FIRING
+  Three tile-saw rentals plus a dust extractor, then a financed purchase
+================================================================================================
+  scenario      upsell_conversion
+  seed world    world
+  clock start   2026-03-01T08:00:00Z
+  ruleset hash  fce31abef79c24b1f93bf58295be7199fe70d8625ceb3e8c55b34272250ce049
+
+    Tobias is a sole trader doing tiling jobs. He rents the same tile saw three times over three months, and once rents the dust extractor that goes with it. Each of the three upsell signals is an integer comparison against a threshold in a YAML file: cumulative spend past 60 percent of the purchase price, three repeat rentals of the same item, and both halves of a declared complementary pair. All three fire. The rent he already paid is credited against the price and the remainder is split into instalments.
+
+SEED WORLD LOADED
+------------------------
+  users          8
+  locations      6
+  partner nodes  2
+  items          28
+  events so far  88
+
+ITEM - Rubi DU-200 EVO
+------------------------
+  item_id            itm_2940c57f810e
+  owner              anke
+  category           tile_saw
+  state              available
+  classified tier    1 (row R10)
+  effective tier     1
+  replacement value  480,00 EUR
+  purchase price     569,00 EUR
+  day rate           19,00 EUR
+  attributes         accessory_count=few, enclosable=true, fragility=robust, has_fixed_location=false, partner_node_available=false, requires_license=false, value_band=mid, weight_class=two_person
+  clean handovers    0
+  item trust         500
+  citation           tier_rules.yaml v3 row R10 (ruleset fce31abe)
+
+  ----- rental 1 -----
+
+  [1/30] Rental 1: reservation
+        actor: renter         clock: 2026-03-01T08:00:00Z
+        - rental rnt_2174fabc3093
+        - 7 day(s), rent 13300 cents
+        - premium 2575 cents, deposit 10000 cents
+        + logged: ItemReserved, InsuranceQuoted, InsuranceBound
+        > 2575 cents, because insurance_rates.yaml v2 (ruleset fce31abe) cell 'mid|1|fair|days_7'
+
+  [2/30] Rental 1: Platform issues the access credential
+        actor: system         clock: 2026-03-01T08:00:00Z
+        - pin credential 166203 valid 2026-03-02T08:00:00Z -> 2026-03-09T08:00:00Z
+        - derived from sha256(rental_id=rnt_2174fabc3093, location_id=loc_64cad75c1d0a, valid_from_epoch=1772438400)
+        + logged: AccessGranted
+
+  ~ clock advanced to 2026-03-02T09:00:00Z
+
+  [3/30] Rental 1: pre-rental condition report
+        actor: renter         clock: 2026-03-02T09:00:00Z
+        - report cnd_188163c79d0d (pre), 0 tag(s), 3 photo(s)
+        + logged: ConditionReportSubmitted, TrustSignalRecorded, TrustSignalRecorded, ConditionDiffComputed
+        > damage_taxonomy.yaml v3 (ruleset fce31abe)
+
+  [4/30] Rental 1: Credential presented, item collected
+        actor: renter         clock: 2026-03-02T09:00:00Z
+        - credential accepted (accepted)
+        - item collected
+        + logged: AccessCodeValidated, ItemPickedUp
+
+  ~ clock advanced to 2026-03-08T17:00:00Z
+
+  [5/30] Rental 1: item returned
+        actor: renter         clock: 2026-03-08T17:00:00Z
+        - returned on time
+        + logged: ItemReturnInitiated, TrustSignalRecorded
+
+  [6/30] Rental 1: post-rental condition report
+        actor: renter         clock: 2026-03-08T17:00:00Z
+        - report cnd_1244d6d86300 (post), 0 tag(s), 3 photo(s)
+        + logged: ConditionReportSubmitted, TrustSignalRecorded, TrustSignalRecorded, ConditionDiffComputed
+        > damage_taxonomy.yaml v3 (ruleset fce31abe)
+
+  [7/30] Rental 1: return accepted and settled
+        actor: system         clock: 2026-03-08T17:00:00Z
+        - return accepted (clean)
+        - settled 15875 cents
+        + logged: ReturnAccepted, AccessRevoked, RentalClosed, TrustSignalRecorded, TrustSignalRecorded
+
+  ----- rental 2 -----
+
+  [8/30] Rental 2: reservation
+        actor: renter         clock: 2026-03-08T17:00:00Z
+        - rental rnt_f24e06f4a41c
+        - 7 day(s), rent 13300 cents
+        - premium 2250 cents, deposit 10000 cents
+        + logged: ItemReserved, InsuranceQuoted, InsuranceBound
+        > 2250 cents, because insurance_rates.yaml v2 (ruleset fce31abe) cell 'mid|1|good|days_7'
+
+  [9/30] Rental 2: Platform issues the access credential
+        actor: system         clock: 2026-03-08T17:00:00Z
+        - pin credential 228394 valid 2026-04-06T08:00:00Z -> 2026-04-13T08:00:00Z
+        - derived from sha256(rental_id=rnt_f24e06f4a41c, location_id=loc_64cad75c1d0a, valid_from_epoch=1775462400)
+        + logged: AccessGranted
+
+  ~ clock advanced to 2026-04-06T09:00:00Z
+
+  [10/30] Rental 2: pre-rental condition report
+        actor: renter         clock: 2026-04-06T09:00:00Z
+        - report cnd_e193ae857d37 (pre), 1 tag(s), 3 photo(s)
+        - NEW SINCE LAST RENTER: blade_dull [minor]
+        + logged: ConditionReportSubmitted, TrustSignalRecorded, TrustSignalRecorded, ConditionDiffComputed, TrustSignalRecorded
+        > damage_taxonomy.yaml v3 (ruleset fce31abe)
+
+  [11/30] Rental 2: Credential presented, item collected
+        actor: renter         clock: 2026-04-06T09:00:00Z
+        - credential accepted (accepted)
+        - item collected
+        + logged: AccessCodeValidated, ItemPickedUp
+
+  ~ clock advanced to 2026-04-12T17:00:00Z
+
+  [12/30] Rental 2: item returned
+        actor: renter         clock: 2026-04-12T17:00:00Z
+        - returned on time
+        + logged: ItemReturnInitiated, TrustSignalRecorded
+
+  [13/30] Rental 2: post-rental condition report
+        actor: renter         clock: 2026-04-12T17:00:00Z
+        - report cnd_b61a596c438d (post), 1 tag(s), 3 photo(s)
+        - confirmed from previous renter: blade_dull
+        + logged: ConditionReportSubmitted, TrustSignalRecorded, TrustSignalRecorded, ConditionDiffComputed
+        > damage_taxonomy.yaml v3 (ruleset fce31abe)
+
+  [14/30] Rental 2: return accepted and settled
+        actor: system         clock: 2026-04-12T17:00:00Z
+        - return accepted (clean)
+        - settled 15550 cents
+        + logged: ReturnAccepted, AccessRevoked, RentalClosed, TrustSignalRecorded, TrustSignalRecorded
+
+  ----- rental 3 -----
+
+  [15/30] Rental 3: reservation
+        actor: renter         clock: 2026-04-12T17:00:00Z
+        - rental rnt_82939a126f38
+        - 7 day(s), rent 13300 cents
+        - premium 2250 cents, deposit 10000 cents
+        + logged: ItemReserved, InsuranceQuoted, InsuranceBound
+        > 2250 cents, because insurance_rates.yaml v2 (ruleset fce31abe) cell 'mid|1|good|days_7'
+
+  [16/30] Rental 3: Platform issues the access credential
+        actor: system         clock: 2026-04-12T17:00:00Z
+        - pin credential 207566 valid 2026-05-11T08:00:00Z -> 2026-05-18T08:00:00Z
+        - derived from sha256(rental_id=rnt_82939a126f38, location_id=loc_64cad75c1d0a, valid_from_epoch=1778486400)
+        + logged: AccessGranted
+
+  ~ clock advanced to 2026-05-11T09:00:00Z
+
+  [17/30] Rental 3: pre-rental condition report
+        actor: renter         clock: 2026-05-11T09:00:00Z
+        - report cnd_89a540df70d1 (pre), 1 tag(s), 3 photo(s)
+        - confirmed from previous renter: blade_dull
+        + logged: ConditionReportSubmitted, TrustSignalRecorded, TrustSignalRecorded, ConditionDiffComputed
+        > damage_taxonomy.yaml v3 (ruleset fce31abe)
+
+  [18/30] Rental 3: Credential presented, item collected
+        actor: renter         clock: 2026-05-11T09:00:00Z
+        - credential accepted (accepted)
+        - item collected
+        + logged: AccessCodeValidated, ItemPickedUp
+
+  ~ clock advanced to 2026-05-17T17:00:00Z
+
+  [19/30] Rental 3: item returned
+        actor: renter         clock: 2026-05-17T17:00:00Z
+        - returned on time
+        + logged: ItemReturnInitiated, TrustSignalRecorded
+
+  [20/30] Rental 3: post-rental condition report
+        actor: renter         clock: 2026-05-17T17:00:00Z
+        - report cnd_94d7da5f4dc8 (post), 1 tag(s), 3 photo(s)
+        - confirmed from previous renter: blade_dull
+        + logged: ConditionReportSubmitted, TrustSignalRecorded, TrustSignalRecorded, ConditionDiffComputed
+        > damage_taxonomy.yaml v3 (ruleset fce31abe)
+
+  [21/30] Rental 3: return accepted and settled
+        actor: system         clock: 2026-05-17T17:00:00Z
+        - return accepted (clean)
+        - settled 15550 cents
+        + logged: ReturnAccepted, AccessRevoked, RentalClosed, TrustSignalRecorded, TrustSignalRecorded
+
+  A tiling job needs extraction. He rents the other half of the pair, which is the third signal.
+
+  ----- rental 4 -----
+
+  [22/30] Rental 4: reservation
+        actor: renter         clock: 2026-05-17T17:00:00Z
+        - rental rnt_930b295b5e1f
+        - 3 day(s), rent 6000 cents
+        - premium 1650 cents, deposit 10000 cents
+        + logged: ItemReserved, InsuranceQuoted, InsuranceBound
+        > 1650 cents, because insurance_rates.yaml v2 (ruleset fce31abe) cell 'mid|2|good|days_3'
+
+  [23/30] Rental 4: Platform issues the access credential
+        actor: system         clock: 2026-05-17T17:00:00Z
+        - gate_code credential 1744 valid 2026-05-20T08:00:00Z -> 2026-05-23T08:00:00Z
+        - derived from sha256(rental_id=rnt_930b295b5e1f, location_id=loc_64cad75c1d0a, valid_from_epoch=1779264000)
+        + logged: AccessGranted
+
+  ~ clock advanced to 2026-05-20T09:00:00Z
+
+  [24/30] Rental 4: pre-rental condition report
+        actor: renter         clock: 2026-05-20T09:00:00Z
+        - report cnd_13d2afb53f0f (pre), 0 tag(s), 4 photo(s)
+        + logged: ConditionReportSubmitted, TrustSignalRecorded, TrustSignalRecorded, ConditionDiffComputed
+        > damage_taxonomy.yaml v3 (ruleset fce31abe)
+
+  [25/30] Rental 4: Credential presented, item collected
+        actor: renter         clock: 2026-05-20T09:00:00Z
+        - credential accepted (accepted)
+        - item collected
+        + logged: AccessCodeValidated, ItemPickedUp
+
+  ~ clock advanced to 2026-05-22T17:00:00Z
+
+  [26/30] Rental 4: item returned
+        actor: renter         clock: 2026-05-22T17:00:00Z
+        - returned on time
+        + logged: ItemReturnInitiated, TrustSignalRecorded
+
+  [27/30] Rental 4: post-rental condition report
+        actor: renter         clock: 2026-05-22T17:00:00Z
+        - report cnd_35546913e9cd (post), 0 tag(s), 4 photo(s)
+        + logged: ConditionReportSubmitted, TrustSignalRecorded, TrustSignalRecorded, ConditionDiffComputed
+        > damage_taxonomy.yaml v3 (ruleset fce31abe)
+
+  [28/30] Rental 4: return accepted and settled
+        actor: system         clock: 2026-05-22T17:00:00Z
+        - return accepted (clean)
+        - settled 7650 cents
+        + logged: ReturnAccepted, AccessRevoked, RentalClosed, TrustSignalRecorded, TrustSignalRecorded
+
+  Now ask the engine what it thinks. Nothing was inferred along the way: this is a fold over closed rentals against three integer thresholds.
+
+  [29/30] Evaluate purchase intent for the tile saw
+        actor: system         clock: 2026-05-22T17:00:00Z
+        - cumulative_spend_threshold (rank 1) -> pof_e65287f23d7d
+        - repeat_rental_threshold (rank 2) -> pof_4dd2b37ba8a9
+        - complementary_pair (rank 3) -> pof_27aa83596d48
+        + logged: PurchaseOpportunityDetected, PurchaseOpportunityDetected, PurchaseOpportunityDetected
+        > cumulative_spend_threshold for itm_2940c57f810e, because complementary_items.yaml v2 (ruleset fce31abe)
+        > repeat_rental_threshold for itm_2940c57f810e, because complementary_items.yaml v2 (ruleset fce31abe)
+        > complementary_pair for itm_2940c57f810e, because complementary_items.yaml v2 (ruleset fce31abe)
+
+PURCHASE OPPORTUNITIES
+------------------------
+  offer              pof_e65287f23d7d [offered]
+  signal             cumulative_spend_threshold (rank 1)
+  headline           You have now spent more renting this than a large part of what it costs to own.
+  evidence           cumulative_rental_cents=39900, purchase_price_cents=56900, threshold_bp=6000, trigger_at_cents=34140
+  price              569,00 EUR
+  rent paid so far   399,00 EUR
+  finance principal  170,00 EUR
+  instalments        3x 56,66 EUR, 6x 28,33 EUR, 12x 14,16 EUR
+  eligible           True
+  citation           complementary_items.yaml v2 (ruleset fce31abe)
+
+  offer              pof_4dd2b37ba8a9 [offered]
+  signal             repeat_rental_threshold (rank 2)
+  headline           You have rented this exact item several times.
+  evidence           rentals_of_this_item=3, threshold=3, window_seconds=15552000
+  price              569,00 EUR
+  rent paid so far   399,00 EUR
+  finance principal  170,00 EUR
+  instalments        3x 56,66 EUR, 6x 28,33 EUR, 12x 14,16 EUR
+  eligible           True
+  citation           complementary_items.yaml v2 (ruleset fce31abe)
+
+  offer              pof_27aa83596d48 [offered]
+  signal             complementary_pair (rank 3)
+  headline           You rented both halves of a job that people usually buy into.
+  evidence           matched_partner_categories=dust_extractor, this_category_rentals=3
+  price              569,00 EUR
+  rent paid so far   399,00 EUR
+  finance principal  170,00 EUR
+  instalments        3x 56,66 EUR, 6x 28,33 EUR, 12x 14,16 EUR
+  eligible           True
+  citation           complementary_items.yaml v2 (ruleset fce31abe)
+
+
+  [30/30] Tobias buys the saw on 6 monthly instalments
+        actor: renter         clock: 2026-05-22T17:00:00Z
+        - financed 17000 cents over 6 months at 2833 cents/month via fake_mondu
+        - 39900 cents of rent credited against the price
+        - ownership transferred to usr_edae790a1743
+        + logged: PurchaseOfferAccepted, ItemSold, TrustSignalRecorded
+
+ITEM - Rubi DU-200 EVO
+------------------------
+  item_id            itm_2940c57f810e
+  owner              tobi
+  category           tile_saw
+  state              sold
+  classified tier    1 (row R10)
+  effective tier     1
+  replacement value  480,00 EUR
+  purchase price     569,00 EUR
+  day rate           19,00 EUR
+  attributes         accessory_count=few, enclosable=true, fragility=robust, has_fixed_location=false, partner_node_available=false, requires_license=false, value_band=mid, weight_class=two_person
+  clean handovers    3
+  item trust         615
+  citation           tier_rules.yaml v3 row R10 (ruleset fce31abe)
+
+TRUST LEDGER - Tobias Reintjes (tobi)
+-------------------------------------
+  baseline  500
+
+  seq  signal                    delta  running
+  ---  ------------------------  -----  -------
+  6    IdentityVerified          +120   620    
+  94   ConditionReportSubmitted  +4     624    
+  100  ReturnedOnTime            +10    634    
+  102  ConditionReportSubmitted  +4     638    
+  108  RentalClosedClean         +25    663    
+  115  ConditionReportSubmitted  +4     667    
+  122  ReturnedOnTime            +10    677    
+  124  ConditionReportSubmitted  +4     681    
+  130  RentalClosedClean         +25    706    
+  137  ConditionReportSubmitted  +4     710    
+  143  ReturnedOnTime            +10    720    
+  145  ConditionReportSubmitted  +4     724    
+  151  RentalClosedClean         +25    749    
+  158  ConditionReportSubmitted  +4     753    
+  164  ReturnedOnTime            +10    763    
+  166  ConditionReportSubmitted  +4     767    
+  172  RentalClosedClean         +25    792    
+  179  PurchaseCompleted         +20    812    
+
+  final     812/1000 (good)
+  citation  trust_weights.yaml v4 (ruleset fce31abe)
+
+FINAL STATE
+------------------------
+  events in log        179
+  log hash             3ac80050ae48351bc4176c58b7c5caa34ee4c7d64c034800ebd839fe7601e475
+  rentals              4 rnt_2174fa=closed, rnt_f24e06=closed, rnt_82939a=closed, rnt_930b29=closed
+  items not available  Rubi DU-200 EVO=sold
+  open disputes        0
+  purchase offers      3
+
+REPLAY CHECK
+------------------------
+  projection fingerprint        e4a89de51bf4b21d5b26b1eda06a0333ad06d55bfca68329d8c0da4e6749e6b9
+  rebuilt-from-log fingerprint  e4a89de51bf4b21d5b26b1eda06a0333ad06d55bfca68329d8c0da4e6749e6b9
+  identical                     YES

@@ -6,7 +6,7 @@
 # table holds a cached copy that a replay is allowed to overwrite.
 # Scale: 0..1000. No floats anywhere.
 
-ruleset_version: 3
+ruleset_version: 4
 schema: trust_weights/1
 
 scale: {min: 0, max: 1000}
@@ -38,10 +38,15 @@ user_weights:
   ReservationCancelledLate:    -15
   PurchaseCompleted:            20
 
+# An item earns +50 per clean handover (one closure plus two chain entries), so
+# the four clean handovers Tier 3 -> Tier 1 graduation demands land the item on
+# exactly the 700 trust the same rule requires. The two thresholds are tuned
+# against each other on purpose: graduation should be reachable by doing the
+# thing well four times, and not reachable any other way.
 item_weights:
   ItemListed:                    0
-  RentalClosedClean:            20
-  ConditionReportSubmitted:      3
+  RentalClosedClean:            40
+  ConditionReportSubmitted:      5
   NewDamageAppeared:           -35
   DamageRepaired:               25
   DisputeOpenedOnItem:         -20

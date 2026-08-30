@@ -159,3 +159,40 @@ class DetectPurchaseOpportunity(Command):
 class AcceptPurchaseOffer(Command):
     offer_id: str
     term_months: int
+
+
+@dataclass(frozen=True)
+class VerifySpatialLandmark(Command):
+    """Tier 2. The renter photographs the landmark the instruction names ("third
+    pallet, blue tarp") and declares whether it matches. The declaration is the
+    logged fact; the photo is evidence for it, never a decision input."""
+    rental_id: str
+    landmark_photo_descriptor: str
+    match_declared: bool = True
+
+
+@dataclass(frozen=True)
+class ConfirmPartnerIntake(Command):
+    """Tier 5. Partner staff confirm the consigned item is present and matches
+    the last entry in its condition chain before a collection code is issued."""
+    rental_id: str
+    confirmed_by_handle: str
+    chain_match_declared: bool = True
+
+
+@dataclass(frozen=True)
+class VerifyCertification(Command):
+    """Tier 4. Operator certification checked against the required set. Set
+    membership, not judgement: a missing certificate refuses the command."""
+    rental_id: str
+    operator_handle: str
+    presented_certificates: tuple[str, ...]
+    required_certificates: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class ExecuteContract(Command):
+    """Tier 4. The rental contract and liability annex, signed by both sides."""
+    rental_id: str
+    signed_by_owner_handle: str
+    signed_by_renter_handle: str

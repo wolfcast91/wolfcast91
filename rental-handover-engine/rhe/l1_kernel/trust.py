@@ -218,18 +218,28 @@ def evaluate_risk_flags(facts: Mapping[str, Any], ruleset: Ruleset) -> tuple[Map
     evaluated by an explicit dispatch table -- not by eval() -- so a ruleset file
     can never become a code-execution surface.
     """
+    doc = ruleset.doc("trust_weights")
+    # Absent facts must not accidentally trip a flag, so a missing trust score
+    # reads as the top of the declared scale. That ceiling comes from the
+    # ruleset, not from a literal in this file.
+    no_trust_data = doc["scale"]["max"]
+    bands = {b["band"]: b for b in doc["trust_bands"]}
+    fair_floor = bands["fair"]["min"]        # below this is the `new` band
+    good_floor = bands["good"]["min"]        # below this is not yet proven
+
     predicates = {
         "unverified_identity":   lambda f: f.get("id_verified") is False,
         "repeat_disputes":       lambda f: f.get("n_disputes_90d", 0) >= 2,
         "overdue_history":       lambda f: f.get("overdue_returns_lifetime", 0) >= 1,
-        "low_trust":             lambda f: f.get("user_trust", 1000) < 400,
+        "low_trust":             lambda f: f.get("user_trust", no_trust_data) < fair_floor,
         "lost_item_history":     lambda f: f.get("items_declared_lost_lifetime", 0) >= 1,
         "high_value_new_renter": lambda f: (
-            f.get("value_band") in ("high", "very_high") and f.get("user_trust", 1000) < 650
+            f.get("value_band") in ("high", "very_high")
+            and f.get("user_trust", no_trust_data) < good_floor
         ),
     }
     fired: list[Mapping[str, Any]] = []
-    for spec in ruleset.doc("trust_weights")["risk_flags"]:   # declared order
+    for spec in doc["risk_flags"]:   # declared order
         flag_id = spec["flag_id"]
         predicate = predicates.get(flag_id)
         if predicate is None:

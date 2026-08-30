@@ -1,0 +1,80 @@
+id: overdue_lost
+title: "THE RENTER WHO NEVER CAME BACK"
+subtitle: "Chainsaw, a window that closes, two grace periods, and a write-off"
+seed: world
+clock_start_utc: "2026-03-01T08:00:00Z"
+premise: >
+  Nothing in this system has a background timer. Overdue is not something that
+  happens to a rental - it is a command someone issues, gated on the injected
+  clock being past the window end plus a grace period from the ruleset. That is
+  why eight days of silence replay in a millisecond and produce the same bytes
+  every time. Watch both grace periods refuse the command before they allow it.
+
+script:
+  - show: item
+    item: "@chainsaw"
+
+  - cmd: ReserveItem
+    actor: renter
+    label: "Rico reserves the chainsaw"
+    as: r1
+    args: {item_id: "@chainsaw", renter_handle: ferdi, window_start_utc: "2026-03-02T08:00:00Z", window_end_utc: "2026-03-03T08:00:00Z"}
+  - cmd: GrantAccess
+    actor: system
+    label: "Lockbox PIN issued"
+    args: {rental_id: "@r1"}
+  - advance_to: "2026-03-02T08:30:00Z"
+  - cmd: SubmitConditionReport
+    actor: renter
+    label: "Pre-rental report"
+    args:
+      rental_id: "@r1"
+      phase: pre
+      submitted_by_handle: ferdi
+      damage_tags: [blade_dull]
+      photo_descriptors: {front: "bar and chain", serial_plate: "SN-CHN-0008", working_surface: "chain slightly dull"}
+  - cmd: OpenLockbox
+    actor: renter
+    label: "Collected"
+    args: {rental_id: "@r1"}
+
+  - note: >
+      The window ends at 08:00 on the 3rd. Twenty minutes later the platform tries
+      to mark it overdue. The guard reads overdue_grace_seconds: 3600 straight out
+      of state_transitions.yaml and refuses.
+  - advance_to: "2026-03-03T08:20:00Z"
+  - cmd: MarkOverdue
+    actor: system
+    label: "Premature overdue attempt - the guard should refuse this"
+    expect_rejection: true
+    args: {rental_id: "@r1"}
+
+  - advance_to: "2026-03-03T09:30:00Z"
+  - cmd: MarkOverdue
+    actor: system
+    label: "Past the grace hour - now it is legal"
+    args: {rental_id: "@r1"}
+
+  - note: >
+      Six days of nothing. The platform tries to write the item off; the second
+      grace period (lost_grace_seconds: 604800, seven days) refuses.
+  - advance_to: "2026-03-09T09:30:00Z"
+  - cmd: DeclareLost
+    actor: system
+    label: "Premature write-off attempt - the second guard should refuse this"
+    expect_rejection: true
+    args: {rental_id: "@r1"}
+
+  - advance_to: "2026-03-10T10:00:00Z"
+  - cmd: DeclareLost
+    actor: system
+    label: "Seven days overdue: item written off, deposit forfeited, claim filed"
+    args: {rental_id: "@r1"}
+
+  - show: item
+    item: "@chainsaw"
+  - show: trust
+    user: ferdi
+  - show: risk_flags
+  - show: log
+    limit: 12

@@ -1,0 +1,5 @@
+# The entire dependency footprint. Both are dev-time conveniences:
+# PyYAML parses the L0 ruleset files, pytest runs the suite. There is no
+# runtime dependency on anything that opens a socket.
+PyYAML>=6.0
+pytest>=8.0

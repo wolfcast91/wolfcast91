@@ -1,0 +1,188 @@
+================================================================================================
+  TIER 1 - THE WHOLE POINT: A RENTAL WITH NO HUMANS IN IT
+  Cordless drill, lockbox, PIN, zero coordination
+================================================================================================
+  scenario      tier1_clean
+  seed world    world
+  clock start   2026-03-01T08:00:00Z
+  ruleset hash  fce31abef79c24b1f93bf58295be7199fe70d8625ceb3e8c55b34272250ce049
+
+    Tobias needs a drill for a weekend. Maja is not involved at any point after listing it. No messages, no meeting, no key handover. The platform issues a time-boxed PIN derived from the rental itself, the renter documents the item before unlocking it, and the condition chain grows by two links.
+
+SEED WORLD LOADED
+------------------------
+  users          8
+  locations      6
+  partner nodes  2
+  items          28
+  events so far  88
+
+ITEM - Bosch GSR 18V-55
+------------------------
+  item_id            itm_c6f2e5e1e90d
+  owner              maja
+  category           drill_driver
+  state              available
+  classified tier    1 (row R10)
+  effective tier     1
+  replacement value  180,00 EUR
+  purchase price     219,00 EUR
+  day rate           9,00 EUR
+  attributes         accessory_count=few, enclosable=true, fragility=robust, has_fixed_location=false, partner_node_available=false, requires_license=false, value_band=low, weight_class=hand
+  clean handovers    0
+  item trust         500
+  citation           tier_rules.yaml v3 row R10 (ruleset fce31abe)
+
+HANDOVER PLAN - Tier 1: Fully Autonomous
+----------------------------------------
+  * per tier_rules.yaml v3 row R10 (ruleset fce31abe)
+
+  #  actor   step                                                               logs                                                                      
+  -  ------  -----------------------------------------------------------------  --------------------------------------------------------------------------
+  1  renter  Reserve item and rental window                                     item_id, renter_id, window_start_utc, window_end_utc, quoted_premium_cents
+  2  system  Issue time-boxed lockbox PIN                                       location_id, access_type, pin, valid_from_utc, valid_until_utc            
+  3  renter  Scan lockbox QR on arrival                                         location_id, qr_payload, validation_result                                
+  4  renter  Photograph item state before unlock (confirm or extend the chain)  report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id 
+  5  renter  Enter PIN, open lockbox, take item                                 location_id, pin_used, access_result                                      
+  6  renter  Return item to lockbox                                             location_id, gps_confirmed                                                
+  7  renter  Photograph item state after use                                    report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id 
+  8  system  Revoke PIN, close rental, settle                                   revoked_pin, settled_cents, trust_delta_renter, trust_delta_item          
+
+  Step one is a reservation. The premium is quoted here, not later: it is a lookup in a 320-cell table keyed by value band, tier, trust band and duration band, so the number is defensible before anyone touches anything.
+
+  [1/7] Tobias reserves the drill for two days
+        actor: renter         clock: 2026-03-01T08:00:00Z
+        - rental rnt_eefc20996f11
+        - 2 day(s), rent 1800 cents
+        - premium 550 cents, deposit 2500 cents
+        + logged: ItemReserved, InsuranceQuoted, InsuranceBound
+        > 550 cents, because insurance_rates.yaml v2 (ruleset fce31abe) cell 'low|1|fair|days_3'
+
+  [2/7] Platform issues the lockbox PIN
+        actor: system         clock: 2026-03-01T08:00:00Z
+        - pin credential 204722 valid 2026-03-02T08:00:00Z -> 2026-03-04T08:00:00Z
+        - derived from sha256(rental_id=rnt_eefc20996f11, location_id=loc_5f72a7f82c57, valid_from_epoch=1772438400)
+        + logged: AccessGranted
+
+RENTAL
+------------------------
+  rental_id  rnt_eefc20996f11
+  state      access_granted
+  tier       1
+  window     2026-03-02T08:00:00Z -> 2026-03-04T08:00:00Z
+  rent       18,00 EUR
+  premium    5,50 EUR
+  deposit    25,00 EUR
+  coverage   standard
+  insurance  bound
+  policy     pol_62b0877f3f6b
+  settled    -
+
+  ~ clock advanced to 2026-03-02T09:14:00Z
+
+  Tobias arrives. Before the lockbox opens he photographs the drill and logs what he sees. This is the community inspection step, and it is a hard gate: the pickup transition is guarded on a pre-rental report existing.
+
+  [3/7] Pre-rental condition report
+        actor: renter         clock: 2026-03-02T09:14:00Z
+        - report cnd_3477f96cc42c (pre), 1 tag(s), 3 photo(s)
+        - chain baseline: scratch_minor [cosmetic]
+        + logged: ConditionReportSubmitted, TrustSignalRecorded, TrustSignalRecorded, ConditionDiffComputed
+        > damage_taxonomy.yaml v3 (ruleset fce31abe)
+
+  [4/7] PIN entered, lockbox opens, drill collected
+        actor: renter         clock: 2026-03-02T09:14:00Z
+        - credential accepted (accepted)
+        - item collected
+        + logged: AccessCodeValidated, ItemPickedUp
+
+  ~ clock advanced to 2026-03-03T17:40:00Z
+
+  The weekend happens. Nothing breaks.
+
+  [5/7] Drill returned to the lockbox, GPS confirmed
+        actor: renter         clock: 2026-03-03T17:40:00Z
+        - returned on time
+        + logged: ItemReturnInitiated, TrustSignalRecorded
+
+  [6/7] Post-rental condition report
+        actor: renter         clock: 2026-03-03T17:40:00Z
+        - report cnd_097cecd022b2 (post), 1 tag(s), 3 photo(s)
+        - confirmed from previous renter: scratch_minor
+        + logged: ConditionReportSubmitted, TrustSignalRecorded, TrustSignalRecorded, ConditionDiffComputed
+        > damage_taxonomy.yaml v3 (ruleset fce31abe)
+
+  [7/7] Return accepted, PIN revoked, rental settled
+        actor: system         clock: 2026-03-03T17:40:00Z
+        - return accepted (clean)
+        - settled 2350 cents
+        + logged: ReturnAccepted, AccessRevoked, RentalClosed, TrustSignalRecorded, TrustSignalRecorded
+
+CONDITION CHAIN
+------------------------
+  #  phase  logged at             by    tags on record  new             report          
+  -  -----  --------------------  ----  --------------  --------------  ----------------
+  0  pre    2026-03-02T09:14:00Z  tobi  scratch_minor   +scratch_minor  cnd_3477f96cc42c
+  1  post   2026-03-03T17:40:00Z  tobi  scratch_minor                   cnd_097cecd022b2
+
+TRUST LEDGER - Tobias Reintjes (tobi)
+-------------------------------------
+  baseline  500
+
+  seq  signal                    delta  running
+  ---  ------------------------  -----  -------
+  6    IdentityVerified          +120   620    
+  94   ConditionReportSubmitted  +4     624    
+  100  ReturnedOnTime            +10    634    
+  102  ConditionReportSubmitted  +4     638    
+  108  RentalClosedClean         +25    663    
+
+  final     663/1000 (good)
+  citation  trust_weights.yaml v4 (ruleset fce31abe)
+
+RENTAL
+------------------------
+  rental_id  rnt_eefc20996f11
+  state      closed
+  tier       1
+  window     2026-03-02T08:00:00Z -> 2026-03-04T08:00:00Z
+  rent       18,00 EUR
+  premium    5,50 EUR
+  deposit    25,00 EUR
+  coverage   standard
+  insurance  bound
+  policy     pol_62b0877f3f6b
+  settled    23,50 EUR
+
+EVENT LOG (tail)
+------------------------
+  seq  clock (UTC)           event                     key payload                                                     
+  ---  --------------------  ------------------------  ----------------------------------------------------------------
+  96   2026-03-02T09:14:00Z  ConditionDiffComputed     item_id=itm_c6f2e5e1e90d, report_id=cnd_3477f96cc42c            
+  97   2026-03-02T09:14:00Z  AccessCodeValidated       rental_id=rnt_eefc20996f11, validation_result=accepted          
+  98   2026-03-02T09:14:00Z  ItemPickedUp              item_id=itm_c6f2e5e1e90d, rental_id=rnt_eefc20996f11            
+  99   2026-03-03T17:40:00Z  ItemReturnInitiated       item_id=itm_c6f2e5e1e90d, rental_id=rnt_eefc20996f11            
+  100  2026-03-03T17:40:00Z  TrustSignalRecorded       signal=ReturnedOnTime                                           
+  101  2026-03-03T17:40:00Z  ConditionReportSubmitted  item_id=itm_c6f2e5e1e90d, rental_id=rnt_eefc20996f11, report_id=
+  102  2026-03-03T17:40:00Z  TrustSignalRecorded       signal=ConditionReportSubmitted                                 
+  103  2026-03-03T17:40:00Z  TrustSignalRecorded       signal=ConditionReportSubmitted                                 
+  104  2026-03-03T17:40:00Z  ConditionDiffComputed     item_id=itm_c6f2e5e1e90d, report_id=cnd_097cecd022b2            
+  105  2026-03-03T17:40:00Z  ReturnAccepted            item_id=itm_c6f2e5e1e90d, rental_id=rnt_eefc20996f11            
+  106  2026-03-03T17:40:00Z  AccessRevoked             rental_id=rnt_eefc20996f11                                      
+  107  2026-03-03T17:40:00Z  RentalClosed              item_id=itm_c6f2e5e1e90d, premium_cents=550, rental_id=rnt_eefc2
+  108  2026-03-03T17:40:00Z  TrustSignalRecorded       signal=RentalClosedClean                                        
+  109  2026-03-03T17:40:00Z  TrustSignalRecorded       signal=RentalClosedClean                                        
+
+FINAL STATE
+------------------------
+  events in log        109
+  log hash             b93f3214f61c1c2a450d7dbf5672cb44670be3562402af617d517618081a1e99
+  rentals              1 rnt_eefc20=closed
+  items not available  (none)
+  open disputes        0
+  purchase offers      0
+
+REPLAY CHECK
+------------------------
+  projection fingerprint        aa1f101d1b1e3a402ed3b76bc8a3aed8d1caa869cddf678eb6954dd46e503761
+  rebuilt-from-log fingerprint  aa1f101d1b1e3a402ed3b76bc8a3aed8d1caa869cddf678eb6954dd46e503761
+  identical                     YES
