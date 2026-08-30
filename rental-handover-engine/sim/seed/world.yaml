@@ -1,0 +1,95 @@
+# sim/seed/world.yaml
+# Fixed seed world. Committed, versioned, and byte-stable: every scenario starts
+# from exactly this state, which is half of what makes runs reproducible (the
+# other half is the FixedClock start time each scenario declares).
+#
+# `ref` is a human-readable handle used by scenario scripts. Real ids are
+# content hashes derived at load time, so they too are identical on every run.
+
+seed_version: 2
+
+users:
+  - {handle: maja,      display_name: "Maja Kern",          account_type: private,      verify_identity: true}
+  - {handle: tobi,      display_name: "Tobias Reintjes",    account_type: sole_trader,  verify_identity: true}
+  - {handle: karim,     display_name: "Karim Abadi",        account_type: private,      verify_identity: true}
+  - {handle: lena,      display_name: "Lena Sommerfeld",    account_type: business,     verify_identity: true}
+  - {handle: ferdi,     display_name: "Ferdinand Ohl",      account_type: private,      verify_identity: true}
+  - {handle: anke,      display_name: "Anke Vandenberg",    account_type: sole_trader,  verify_identity: true}
+  - {handle: rico,      display_name: "Rico Baumgart",      account_type: private,      verify_identity: false}
+  - {handle: depot_kai, display_name: "Kai (Depot Moabit)", account_type: partner_staff, verify_identity: true}
+
+partner_nodes:
+  - {ref: schulz,  operator_name: "Eisenwaren Schulz",   node_type: hardware_store, lat_micro: 52534000, lon_micro: 13412000, intake_fee_cents: 450}
+  - {ref: wedding, operator_name: "Repair Cafe Wedding", node_type: repair_cafe,    lat_micro: 52548000, lon_micro: 13363000, intake_fee_cents: 300}
+
+locations:
+  - ref: hinterhof
+    owner: maja
+    label: "Hinterhof Prenzlauer Berg"
+    access_type: pin
+    lat_micro: 52540000
+    lon_micro: 13424000
+  - ref: bauhof
+    owner: lena
+    label: "Bauhof Lichtenberg"
+    access_type: gate_code
+    lat_micro: 52515000
+    lon_micro: 13478000
+    spatial_instruction: "Through the green gate, third pallet on the left, under the blue tarp"
+    landmark_photo_slot: landmark
+  - ref: ostkreuz
+    owner: karim
+    label: "Treffpunkt Ostkreuz Nordsteg"
+    access_type: meetup
+    lat_micro: 52502000
+    lon_micro: 13469000
+  - ref: werkstatt
+    owner: anke
+    label: "Werkstatt Neukoelln"
+    access_type: staffed
+    lat_micro: 52478000
+    lon_micro: 13435000
+  - ref: depot
+    owner: lena
+    label: "Depot Moabit"
+    access_type: staffed
+    lat_micro: 52528000
+    lon_micro: 13341000
+  - ref: schulz_counter
+    owner: lena
+    label: "Eisenwaren Schulz Abholtresen"
+    access_type: depot
+    lat_micro: 52534000
+    lon_micro: 13412000
+    partner_node: schulz
+
+# replacement_value_cents / purchase_price_cents / day_rate_cents: integer cents.
+items:
+  - {ref: drill_bosch,    owner: maja,  category: drill_driver,     model_name: "Bosch GSR 18V-55",        serial: SN-DRL-0001, value_cents: 18000,  price_cents: 21900,  day_rate_cents: 900,  location: hinterhof, accessories: [charger, spare_battery, bit_set]}
+  - {ref: sander_makita,  owner: maja,  category: drill_driver,     model_name: "Makita BO5041 sander",    serial: SN-SND-0002, value_cents: 12500,  price_cents: 14900,  day_rate_cents: 700,  location: hinterhof, accessories: [dust_bag, sanding_discs]}
+  - {ref: steamer,        owner: maja,  category: wallpaper_steamer, model_name: "Earlex SS125",           serial: SN-STM-0003, value_cents: 8900,   price_cents: 9900,   day_rate_cents: 600,  location: hinterhof, accessories: [hose, plate]}
+  - {ref: laser,          owner: anke,  category: laser_level,      model_name: "Bosch GRL 300 HV",        serial: SN-LSR-0004, value_cents: 62000,  price_cents: 74900,  day_rate_cents: 2200, location: werkstatt, accessories: [tripod, receiver, staff]}
+  - {ref: tilesaw,        owner: anke,  category: tile_saw,         model_name: "Rubi DU-200 EVO",         serial: SN-TIL-0005, value_cents: 48000,  price_cents: 56900,  day_rate_cents: 1900, location: werkstatt, accessories: [blade, water_tray]}
+  - {ref: extractor,      owner: anke,  category: dust_extractor,   model_name: "Festool CTL MIDI",        serial: SN-EXT-0006, value_cents: 52000,  price_cents: 61900,  day_rate_cents: 2000, location: werkstatt, accessories: [hose, filter_bag]}
+  - {ref: pressure,       owner: maja,  category: pressure_washer,  model_name: "Kaercher K5 Premium",     serial: SN-PRW-0007, value_cents: 26000,  price_cents: 29900,  day_rate_cents: 1200, location: hinterhof, accessories: [lance, patio_head]}
+  - {ref: chainsaw,       owner: ferdi, category: chainsaw,         model_name: "Stihl MS 170",            serial: SN-CHN-0008, value_cents: 21000,  price_cents: 24900,  day_rate_cents: 1400, location: hinterhof, accessories: [chain_oil, guard]}
+  - {ref: generator,      owner: lena,  category: generator,        model_name: "Honda EU22i",             serial: SN-GEN-0009, value_cents: 89000,  price_cents: 109900, day_rate_cents: 3400, location: bauhof,    accessories: [fuel_can, earthing_spike]}
+  - {ref: mixer,          owner: lena,  category: cement_mixer,     model_name: "Atika Comet 130",         serial: SN-MIX-0010, value_cents: 34000,  price_cents: 39900,  day_rate_cents: 1600, location: bauhof,    accessories: []}
+  - {ref: scaffold,       owner: lena,  category: scaffolding,      model_name: "Zarges Rollgeruest 6m",   serial: SN-SCF-0011, value_cents: 92000,  price_cents: 118000, day_rate_cents: 3900, location: bauhof,    accessories: [castors, platform_a, platform_b, guardrail, toeboard, outrigger]}
+  - {ref: ladder,         owner: lena,  category: ladder,           model_name: "Hymer 4m Schiebeleiter",  serial: SN-LDR-0012, value_cents: 15000,  price_cents: 17900,  day_rate_cents: 700,  location: bauhof,    accessories: []}
+  - {ref: compactor,      owner: lena,  category: plate_compactor,  model_name: "Wacker Neuson VP1135A",   serial: SN-CMP-0013, value_cents: 145000, price_cents: 179000, day_rate_cents: 5200, location: bauhof,    accessories: [wheel_kit]}
+  - {ref: party_tent,     owner: lena,  category: party_tent,       model_name: "Toolport 6x12 Partyzelt", serial: SN-TNT-0014, value_cents: 68000,  price_cents: 79900,  day_rate_cents: 4200, location: bauhof,    accessories: [side_a, side_b, side_c, side_d, ratchet_set, ground_pegs]}
+  - {ref: floor_sander,   owner: lena,  category: floor_sander,     model_name: "Lagler Hummel",           serial: SN-FLS-0015, value_cents: 240000, price_cents: 295000, day_rate_cents: 8900, location: bauhof,    accessories: [dust_bag, abrasive_set]}
+  - {ref: dslr,           owner: karim, category: dslr_kit,         model_name: "Canon R6 + 3 Objektive",  serial: SN-CAM-0016, value_cents: 385000, price_cents: 429000, day_rate_cents: 6500, location: ostkreuz,  accessories: [lens_24_70, lens_70_200, lens_35, battery_grip, cf_cards]}
+  - {ref: pa,             owner: karim, category: pa_system,        model_name: "LD Systems Maui 28 G3",   serial: SN-PA-0017,  value_cents: 210000, price_cents: 249000, day_rate_cents: 5800, location: ostkreuz,  accessories: [sub, column_a, column_b, mixer_cable, mic]}
+  - {ref: ebike,          owner: karim, category: ebike,            model_name: "Riese & Mueller Charger", serial: SN-EBK-0018, value_cents: 420000, price_cents: 489000, day_rate_cents: 4900, location: ostkreuz,  accessories: [charger, pannier]}
+  - {ref: sewing,         owner: ferdi, category: sewing_machine,   model_name: "Bernina 570 QE",          serial: SN-SEW-0019, value_cents: 195000, price_cents: 229000, day_rate_cents: 3200, location: ostkreuz,  accessories: [walking_foot, bobbins]}
+  - {ref: kayak,          owner: ferdi, category: kayak,            model_name: "Prijon Seayak 2er",       serial: SN-KYK-0020, value_cents: 98000,  price_cents: 119000, day_rate_cents: 3600, location: bauhof,    accessories: [paddle_a, paddle_b]}
+  - {ref: projector,      owner: karim, category: projector,        model_name: "Epson EH-TW7100",         serial: SN-PRJ-0021, value_cents: 78000,  price_cents: 92900,  day_rate_cents: 2400, location: hinterhof, accessories: [remote, hdmi_cable]}
+  - {ref: excavator,      owner: lena,  category: mini_excavator,   model_name: "Kubota KX019-4",          serial: SN-EXC-0022, value_cents: 3900000, price_cents: 4450000, day_rate_cents: 24000, location: depot,   accessories: [bucket_30, bucket_60]}
+  - {ref: crane,          owner: lena,  category: mobile_crane,     model_name: "Liebherr LTM 1030",       serial: SN-CRN-0023, value_cents: 28000000, price_cents: 31000000, day_rate_cents: 145000, location: depot, accessories: [outrigger_pads]}
+  - {ref: carpet_cleaner, owner: anke,  category: carpet_cleaner,   model_name: "Kaercher Puzzi 10/1",     serial: SN-CRP-0024, value_cents: 62000,  price_cents: 74900,  day_rate_cents: 2100, location: schulz_counter, accessories: [hand_tool, hose], overrides: {partner_node_available: true}}
+  - {ref: welder,         owner: anke,  category: welder,           model_name: "Fronius TransSteel 2200", serial: SN-WLD-0025, value_cents: 185000, price_cents: 219000, day_rate_cents: 4400, location: schulz_counter, accessories: [torch, earth_clamp, mask], overrides: {partner_node_available: true}}
+  - {ref: snowblower,     owner: ferdi, category: snow_blower,      model_name: "Honda HSS 760A",          serial: SN-SNW-0026, value_cents: 168000, price_cents: 199000, day_rate_cents: 4800, location: bauhof,    accessories: [chute_crank]}
+  - {ref: guitar,         owner: karim, category: guitar,           model_name: "Martin D-28",             serial: SN-GTR-0027, value_cents: 290000, price_cents: 329000, day_rate_cents: 3900, location: ostkreuz,  accessories: [hardcase, capo]}
+  - {ref: trailer,        owner: ferdi, category: trailer,          model_name: "Humbaur HA 132513",       serial: SN-TRL-0028, value_cents: 175000, price_cents: 209000, day_rate_cents: 3800, location: bauhof,    accessories: [spare_wheel, straps]}

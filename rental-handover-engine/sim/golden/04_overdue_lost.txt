@@ -1,0 +1,160 @@
+================================================================================================
+  THE RENTER WHO NEVER CAME BACK
+  Chainsaw, a window that closes, two grace periods, and a write-off
+================================================================================================
+  scenario      overdue_lost
+  seed world    world
+  clock start   2026-03-01T08:00:00Z
+  ruleset hash  fce31abef79c24b1f93bf58295be7199fe70d8625ceb3e8c55b34272250ce049
+
+    Nothing in this system has a background timer. Overdue is not something that happens to a rental - it is a command someone issues, gated on the injected clock being past the window end plus a grace period from the ruleset. That is why eight days of silence replay in a millisecond and produce the same bytes every time. Watch both grace periods refuse the command before they allow it.
+
+SEED WORLD LOADED
+------------------------
+  users          8
+  locations      6
+  partner nodes  2
+  items          28
+  events so far  88
+
+ITEM - Stihl MS 170
+------------------------
+  item_id            itm_c23742b2736b
+  owner              ferdi
+  category           chainsaw
+  state              available
+  classified tier    1 (row R10)
+  effective tier     1
+  replacement value  210,00 EUR
+  purchase price     249,00 EUR
+  day rate           14,00 EUR
+  attributes         accessory_count=few, enclosable=true, fragility=robust, has_fixed_location=false, partner_node_available=false, requires_license=false, value_band=mid, weight_class=hand
+  clean handovers    0
+  item trust         500
+  citation           tier_rules.yaml v3 row R10 (ruleset fce31abe)
+
+  [1/8] Rico reserves the chainsaw
+        actor: renter         clock: 2026-03-01T08:00:00Z
+        - rental rnt_18532f18b744
+        - 1 day(s), rent 1400 cents
+        - premium 1025 cents, deposit 10000 cents
+        + logged: ItemReserved, InsuranceQuoted, InsuranceBound
+        > 1025 cents, because insurance_rates.yaml v2 (ruleset fce31abe) cell 'mid|1|fair|hours_24'
+
+  [2/8] Lockbox PIN issued
+        actor: system         clock: 2026-03-01T08:00:00Z
+        - pin credential 296219 valid 2026-03-02T08:00:00Z -> 2026-03-03T08:00:00Z
+        - derived from sha256(rental_id=rnt_18532f18b744, location_id=loc_5f72a7f82c57, valid_from_epoch=1772438400)
+        + logged: AccessGranted
+
+  ~ clock advanced to 2026-03-02T08:30:00Z
+
+  [3/8] Pre-rental report
+        actor: renter         clock: 2026-03-02T08:30:00Z
+        - report cnd_92b5c5d461ac (pre), 1 tag(s), 3 photo(s)
+        - chain baseline: blade_dull [minor]
+        + logged: ConditionReportSubmitted, TrustSignalRecorded, TrustSignalRecorded, ConditionDiffComputed
+        > damage_taxonomy.yaml v3 (ruleset fce31abe)
+
+  [4/8] Collected
+        actor: renter         clock: 2026-03-02T08:30:00Z
+        - credential accepted (accepted)
+        - item collected
+        + logged: AccessCodeValidated, ItemPickedUp
+
+  The window ends at 08:00 on the 3rd. Twenty minutes later the platform tries to mark it overdue. The guard reads overdue_grace_seconds: 3600 straight out of state_transitions.yaml and refuses.
+
+  ~ clock advanced to 2026-03-03T08:20:00Z
+
+  [5/8] Premature overdue attempt - the guard should refuse this
+        actor: system         clock: 2026-03-03T08:20:00Z
+        ! REJECTED (as the scenario expects): item: 'RentalMarkedOverdue' is illegal from 'out' -- guard window_end_passed refused: window_not_yet_overdue_by_3600s (state_transitions.yaml v4 (ruleset fce31abe))
+
+  ~ clock advanced to 2026-03-03T09:30:00Z
+
+  [6/8] Past the grace hour - now it is legal
+        actor: system         clock: 2026-03-03T09:30:00Z
+        - overdue by 5400 seconds
+        + logged: RentalMarkedOverdue, TrustSignalRecorded
+
+  Six days of nothing. The platform tries to write the item off; the second grace period (lost_grace_seconds: 604800, seven days) refuses.
+
+  ~ clock advanced to 2026-03-09T09:30:00Z
+
+  [7/8] Premature write-off attempt - the second guard should refuse this
+        actor: system         clock: 2026-03-09T09:30:00Z
+        ! REJECTED (as the scenario expects): item: 'ItemDeclaredLost' is illegal from 'overdue_out' -- guard lost_grace_elapsed refused: lost_grace_of_604800s_not_elapsed (state_transitions.yaml v4 (ruleset fce31abe))
+
+  ~ clock advanced to 2026-03-10T10:00:00Z
+
+  [8/8] Seven days overdue: item written off, deposit forfeited, claim filed
+        actor: system         clock: 2026-03-10T10:00:00Z
+        - item written off; deposit 10000 cents forfeited
+        - claim filed against policy pol_1d418d5f9991
+        + logged: ItemDeclaredLost, TrustSignalRecorded
+
+ITEM - Stihl MS 170
+------------------------
+  item_id            itm_c23742b2736b
+  owner              ferdi
+  category           chainsaw
+  state              lost
+  classified tier    1 (row R10)
+  effective tier     1
+  replacement value  210,00 EUR
+  purchase price     249,00 EUR
+  day rate           14,00 EUR
+  attributes         accessory_count=few, enclosable=true, fragility=robust, has_fixed_location=false, partner_node_available=false, requires_license=false, value_band=mid, weight_class=hand
+  clean handovers    0
+  item trust         505
+  citation           tier_rules.yaml v3 row R10 (ruleset fce31abe)
+
+TRUST LEDGER - Ferdinand Ohl (ferdi)
+------------------------------------
+  baseline  500
+
+  seq  signal                    delta  running
+  ---  ------------------------  -----  -------
+  15   IdentityVerified          +120   620    
+  94   ConditionReportSubmitted  +4     624    
+  100  RentalMarkedOverdue       -60    564    
+  102  ItemDeclaredLost          -400   164    
+
+  final     164/1000 (new)
+  citation  trust_weights.yaml v4 (ruleset fce31abe)
+
+RISK FLAGS
+------------------------
+  (none)
+
+EVENT LOG (tail)
+------------------------
+  seq  clock (UTC)           event                     key payload                                                     
+  ---  --------------------  ------------------------  ----------------------------------------------------------------
+  91   2026-03-01T08:00:00Z  InsuranceBound            premium_cents=1025, rental_id=rnt_18532f18b744                  
+  92   2026-03-01T08:00:00Z  AccessGranted             pin=296219, rental_id=rnt_18532f18b744                          
+  93   2026-03-02T08:30:00Z  ConditionReportSubmitted  item_id=itm_c23742b2736b, rental_id=rnt_18532f18b744, report_id=
+  94   2026-03-02T08:30:00Z  TrustSignalRecorded       signal=ConditionReportSubmitted                                 
+  95   2026-03-02T08:30:00Z  TrustSignalRecorded       signal=ConditionReportSubmitted                                 
+  96   2026-03-02T08:30:00Z  ConditionDiffComputed     item_id=itm_c23742b2736b, report_id=cnd_92b5c5d461ac            
+  97   2026-03-02T08:30:00Z  AccessCodeValidated       rental_id=rnt_18532f18b744, validation_result=accepted          
+  98   2026-03-02T08:30:00Z  ItemPickedUp              item_id=itm_c23742b2736b, rental_id=rnt_18532f18b744            
+  99   2026-03-03T09:30:00Z  RentalMarkedOverdue       item_id=itm_c23742b2736b, rental_id=rnt_18532f18b744            
+  100  2026-03-03T09:30:00Z  TrustSignalRecorded       signal=RentalMarkedOverdue                                      
+  101  2026-03-10T10:00:00Z  ItemDeclaredLost          item_id=itm_c23742b2736b, rental_id=rnt_18532f18b744            
+  102  2026-03-10T10:00:00Z  TrustSignalRecorded       signal=ItemDeclaredLost                                         
+
+FINAL STATE
+------------------------
+  events in log        102
+  log hash             62bedaf2ca532ba25fc3d7126275eec63c2970683a5f7f9e48df65ad60614478
+  rentals              1 rnt_18532f=written_off
+  items not available  Stihl MS 170=lost
+  open disputes        0
+  purchase offers      0
+
+REPLAY CHECK
+------------------------
+  projection fingerprint        0593130393f95971e6bbba3d3b8914c045631dbcb9eb490b926952c0f7e352e4
+  rebuilt-from-log fingerprint  0593130393f95971e6bbba3d3b8914c045631dbcb9eb490b926952c0f7e352e4
+  identical                     YES

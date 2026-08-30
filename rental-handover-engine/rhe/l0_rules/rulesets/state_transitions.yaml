@@ -1,0 +1,112 @@
+# state_transitions.yaml
+# L0 RULESET — Two lifecycle machines: `item` and `rental`.
+#
+# Every transition names its trigger (an L2 event type), the actor that may fire
+# it, and zero or more named guards. Guards are pure predicates implemented in
+# rhe/l1_kernel/guards.py and resolved by name -- the guard NAMES live here so a
+# rule change never requires a code change to the machine itself.
+#
+# Charter rule: an illegal transition raises IllegalTransition. It is never a
+# silent no-op and never leaves the machine in its prior state quietly.
+
+ruleset_version: 4
+schema: state_transitions/1
+
+machines:
+  item:
+    initial: draft
+    terminal: [retired, sold]
+    states:
+      draft:            {description: "Listed but not yet published."}
+      available:        {description: "Bookable."}
+      reserved:         {description: "Held for a rental window, not yet collected."}
+      out:              {description: "In the renter's possession."}
+      overdue_out:      {description: "In the renter's possession past the window end."}
+      in_return_check:  {description: "Physically returned, post-condition report pending or under review."}
+      damage_hold:      {description: "New damage logged on return; not bookable."}
+      disputed:         {description: "Two condition reports disagree; awaiting human resolution."}
+      under_repair:     {description: "Withdrawn for repair."}
+      lost:             {description: "Never returned and declared lost."}
+      retired:          {description: "Permanently withdrawn."}
+      sold:             {description: "Ownership transferred through the platform."}
+    transitions:
+      - {from: draft,           trigger: ItemListed,             to: available,       actor: owner,   guards: [item_has_location, item_has_tier]}
+      - {from: available,       trigger: ItemReserved,           to: reserved,        actor: renter,  guards: [renter_id_verified, no_overlapping_reservation]}
+      - {from: available,       trigger: ItemRetired,            to: retired,         actor: owner,   guards: []}
+      - {from: available,       trigger: ItemSold,               to: sold,            actor: owner,   guards: [purchase_offer_accepted]}
+      - {from: reserved,        trigger: ItemPickedUp,           to: out,             actor: renter,  guards: [access_granted_for_rental, pre_condition_report_exists]}
+      - {from: reserved,        trigger: ReservationCancelled,   to: available,       actor: renter,  guards: []}
+      - {from: out,             trigger: ItemReturnInitiated,    to: in_return_check, actor: renter,  guards: []}
+      - {from: out,             trigger: RentalMarkedOverdue,    to: overdue_out,     actor: system,  guards: [window_end_passed]}
+      - {from: overdue_out,     trigger: ItemReturnInitiated,    to: in_return_check, actor: renter,  guards: []}
+      - {from: overdue_out,     trigger: ItemDeclaredLost,       to: lost,            actor: system,  guards: [lost_grace_elapsed]}
+      - {from: in_return_check, trigger: ReturnAccepted,         to: available,       actor: system,  guards: [post_condition_report_exists]}
+      - {from: in_return_check, trigger: DamageReported,         to: damage_hold,     actor: owner,   guards: [post_condition_report_exists]}
+      - {from: damage_hold,     trigger: DisputeOpened,          to: disputed,        actor: renter,  guards: []}
+      - {from: damage_hold,     trigger: RepairScheduled,        to: under_repair,    actor: owner,   guards: []}
+      - {from: damage_hold,     trigger: DamageWaived,           to: available,       actor: owner,   guards: []}
+      - {from: disputed,        trigger: DisputeResolvedRepair,  to: under_repair,    actor: system,  guards: [human_resolution_recorded]}
+      - {from: disputed,        trigger: DisputeResolvedNoFault, to: available,       actor: system,  guards: [human_resolution_recorded]}
+      - {from: under_repair,    trigger: RepairCompleted,        to: available,       actor: owner,   guards: []}
+      - {from: under_repair,    trigger: ItemRetired,            to: retired,         actor: owner,   guards: []}
+      - {from: lost,            trigger: ItemRecovered,          to: in_return_check, actor: owner,   guards: []}
+      - {from: lost,            trigger: ItemRetired,            to: retired,         actor: system,  guards: []}
+
+  rental:
+    initial: none
+    terminal: [closed, cancelled, written_off]
+    states:
+      none:             {description: "Pseudo-state before the rental exists."}
+      reserved:         {description: "Window held, no access issued yet."}
+      access_granted:   {description: "PIN / gate code / meetup confirmed."}
+      active:           {description: "Item collected, rental running."}
+      overdue:          {description: "Past window end, item not returned."}
+      return_initiated: {description: "Renter has returned the item; inspection pending."}
+      damage_reported:  {description: "New damage claimed against this rental."}
+      disputed:         {description: "Claim contested; awaiting human resolution."}
+      closed:           {description: "Settled."}
+      cancelled:        {description: "Never started."}
+      written_off:      {description: "Item never came back."}
+    transitions:
+      - {from: none,             trigger: ItemReserved,           to: reserved,         actor: renter,  guards: [renter_id_verified]}
+      - {from: reserved,         trigger: AccessGranted,          to: access_granted,   actor: system,  guards: []}
+      - {from: reserved,         trigger: MeetupConfirmed,        to: access_granted,   actor: owner,   guards: []}
+      - {from: reserved,         trigger: ReservationCancelled,   to: cancelled,        actor: renter,  guards: []}
+      - {from: access_granted,   trigger: ItemPickedUp,           to: active,           actor: renter,  guards: [pre_condition_report_exists]}
+      - {from: access_granted,   trigger: ReservationCancelled,   to: cancelled,        actor: renter,  guards: []}
+      - {from: active,           trigger: RentalMarkedOverdue,    to: overdue,          actor: system,  guards: [window_end_passed]}
+      - {from: active,           trigger: ItemReturnInitiated,    to: return_initiated, actor: renter,  guards: []}
+      - {from: overdue,          trigger: ItemReturnInitiated,    to: return_initiated, actor: renter,  guards: []}
+      - {from: overdue,          trigger: ItemDeclaredLost,       to: written_off,      actor: system,  guards: [lost_grace_elapsed]}
+      - {from: return_initiated, trigger: ReturnAccepted,         to: closed,           actor: system,  guards: [post_condition_report_exists]}
+      - {from: return_initiated, trigger: DamageReported,         to: damage_reported,  actor: owner,   guards: [post_condition_report_exists]}
+      - {from: damage_reported,  trigger: DisputeOpened,          to: disputed,         actor: renter,  guards: []}
+      - {from: damage_reported,  trigger: DamageWaived,           to: closed,           actor: owner,   guards: []}
+      - {from: damage_reported,  trigger: DamageSettled,          to: closed,           actor: system,  guards: [deposit_or_claim_recorded]}
+      - {from: disputed,         trigger: DisputeResolvedRepair,  to: closed,           actor: system,  guards: [human_resolution_recorded]}
+      - {from: disputed,         trigger: DisputeResolvedNoFault, to: closed,           actor: system,  guards: [human_resolution_recorded]}
+
+# Named integer parameters the guards read. No thresholds live in code.
+guard_parameters:
+  overdue_grace_seconds: 3600        # 1h past window end before RentalMarkedOverdue is legal
+  lost_grace_seconds: 604800         # 7 days overdue before an item may be declared lost
+  max_open_disputes_per_renter: 2
+
+# The two explicitly-required awkward cases, and where they are handled.
+edge_cases:
+  renter_never_returns:
+    path: [active, overdue, written_off]
+    notes: >
+      RentalMarkedOverdue is a system trigger gated on window_end_passed plus
+      overdue_grace_seconds. After lost_grace_seconds the system may fire
+      ItemDeclaredLost, moving item -> lost and rental -> written_off. The
+      deposit and insurance claim seam is stamped on the ItemDeclaredLost event.
+      No timer fires by itself: the simulator advances the injected Clock and
+      issues the command, so the path is fully replayable.
+  consecutive_reports_disagree:
+    path: [return_initiated, damage_reported, disputed, closed]
+    notes: >
+      diff_condition() flags tags present in report N and absent in report N-1.
+      The system never adjudicates. It records both claims, opens a dispute, and
+      routes it to a human. precedence.yaml:condition_disagreement decides only
+      which claim is presented FIRST to the resolver, never who is at fault.

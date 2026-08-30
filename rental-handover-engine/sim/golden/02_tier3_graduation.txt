@@ -1,0 +1,347 @@
+================================================================================================
+  TIER 3 -> TIER 1: AN ITEM EARNS ITS WAY OUT OF MEETUPS
+  Bernina sewing machine, four clean countersigned handovers, then no more handshakes
+================================================================================================
+  scenario      tier3_graduation
+  seed world    world
+  clock start   2026-03-01T08:00:00Z
+  ruleset hash  fce31abef79c24b1f93bf58295be7199fe70d8625ceb3e8c55b34272250ce049
+
+    A sewing machine is delicate, so the classifier puts it in Tier 3: both parties present, shared checklist, both signatures. That is expensive in human time and the point is to stop doing it. Graduation is not a vibe - it is four consecutive clean handovers, item trust of 700, zero lifetime disputes, and the item has to physically fit in a lockbox. Watch the fourth closure flip it to Tier 1.
+
+SEED WORLD LOADED
+------------------------
+  users          8
+  locations      6
+  partner nodes  2
+  items          28
+  events so far  88
+
+ITEM - Bernina 570 QE
+------------------------
+  item_id            itm_a63f9d2ad2cc
+  owner              ferdi
+  category           sewing_machine
+  state              available
+  classified tier    3 (row R03)
+  effective tier     3
+  replacement value  1950,00 EUR
+  purchase price     2290,00 EUR
+  day rate           32,00 EUR
+  attributes         accessory_count=few, enclosable=true, fragility=delicate, has_fixed_location=false, partner_node_available=false, requires_license=false, value_band=mid, weight_class=hand
+  clean handovers    0
+  item trust         500
+  citation           tier_rules.yaml v3 row R03 (ruleset fce31abe)
+
+HANDOVER PLAN - Tier 3: Assisted Meetup
+---------------------------------------
+  * per tier_rules.yaml v3 row R03 (ruleset fce31abe)
+
+  #  actor   step                                              logs                                                                                         
+  -  ------  ------------------------------------------------  ---------------------------------------------------------------------------------------------
+  1  renter  Reserve item and propose meetup window            item_id, renter_id, window_start_utc, window_end_utc, quoted_premium_cents                   
+  2  owner   Owner confirms meetup point and time              location_id, access_type, meetup_utc                                                         
+  3  both    Walk the shared checklist together, item by item  report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id, accessory_manifest
+  4  both    Both parties digitally sign the condition report  report_id, signed_by_owner, signed_by_renter                                                 
+  5  owner   Physical handover                                 location_id, pin_used, access_result                                                         
+  6  both    Return meetup, joint checklist again              location_id, gps_confirmed                                                                   
+  7  both    Post-rental condition report, countersigned       report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id, accessory_manifest
+  8  system  Close rental, settle, evaluate tier graduation    revoked_pin, settled_cents, trust_delta_renter, trust_delta_item                             
+
+  Ferdinand owns it. Four different renters take it out, each confirming the previous renter's condition entry rather than starting a fresh opinion.
+
+  ----- rental 1 -----
+
+  [1/28] Rental 1: reservation
+        actor: renter         clock: 2026-03-01T08:00:00Z
+        - rental rnt_995da9a66d70
+        - 3 day(s), rent 9600 cents
+        - premium 5950 cents, deposit 50000 cents
+        - risk flag: high_value_new_renter (value_band in [high, very_high] and user_trust < 650)
+        + logged: RiskFlagRaised, ItemReserved, InsuranceQuoted, InsuranceBound
+        > 5950 cents, because insurance_rates.yaml v2 (ruleset fce31abe) cell 'high|3|fair|days_3'
+
+  [2/28] Rental 1: Owner confirms the meetup
+        actor: system         clock: 2026-03-01T08:00:00Z
+        - meetup confirmed; no credential issued
+        + logged: MeetupConfirmed
+
+  ~ clock advanced to 2026-03-02T10:00:00Z
+
+  [3/28] Rental 1: pre-rental condition report
+        actor: renter         clock: 2026-03-02T10:00:00Z
+        - report cnd_9993789c2c86 (pre), 1 tag(s), 5 photo(s)
+        - chain baseline: sensor_dust [minor]
+        + logged: ConditionReportSubmitted, TrustSignalRecorded, TrustSignalRecorded, ConditionDiffComputed, ConditionReportCountersigned, TrustSignalRecorded, TrustSignalRecorded
+        > damage_taxonomy.yaml v3 (ruleset fce31abe)
+
+  [4/28] Rental 1: Handover at the meetup point
+        actor: renter         clock: 2026-03-02T10:00:00Z
+        - item collected
+        + logged: ItemPickedUp
+
+  ~ clock advanced to 2026-03-04T18:00:00Z
+
+  [5/28] Rental 1: item returned
+        actor: renter         clock: 2026-03-04T18:00:00Z
+        - returned on time
+        + logged: ItemReturnInitiated, TrustSignalRecorded
+
+  [6/28] Rental 1: post-rental condition report
+        actor: renter         clock: 2026-03-04T18:00:00Z
+        - report cnd_7f9881b2b951 (post), 1 tag(s), 5 photo(s)
+        - confirmed from previous renter: sensor_dust
+        + logged: ConditionReportSubmitted, TrustSignalRecorded, TrustSignalRecorded, ConditionDiffComputed, ConditionReportCountersigned, TrustSignalRecorded, TrustSignalRecorded
+        > damage_taxonomy.yaml v3 (ruleset fce31abe)
+
+  [7/28] Rental 1: return accepted and settled
+        actor: system         clock: 2026-03-04T18:00:00Z
+        - return accepted (clean)
+        - settled 15550 cents
+        - graduation progress: clean_handovers 1/4, item_trust 550/700
+        + logged: ReturnAccepted, RentalClosed, TrustSignalRecorded, TrustSignalRecorded
+
+  ----- rental 2 -----
+
+  [8/28] Rental 2: reservation
+        actor: renter         clock: 2026-03-04T18:00:00Z
+        - rental rnt_1faf74bd10d0
+        - 3 day(s), rent 9600 cents
+        - premium 5950 cents, deposit 50000 cents
+        - risk flag: high_value_new_renter (value_band in [high, very_high] and user_trust < 650)
+        + logged: RiskFlagRaised, ItemReserved, InsuranceQuoted, InsuranceBound
+        > 5950 cents, because insurance_rates.yaml v2 (ruleset fce31abe) cell 'high|3|fair|days_3'
+
+  [9/28] Rental 2: Owner confirms the meetup
+        actor: system         clock: 2026-03-04T18:00:00Z
+        - meetup confirmed; no credential issued
+        + logged: MeetupConfirmed
+
+  ~ clock advanced to 2026-03-10T10:00:00Z
+
+  [10/28] Rental 2: pre-rental condition report
+        actor: renter         clock: 2026-03-10T10:00:00Z
+        - report cnd_ced17a3d4d44 (pre), 1 tag(s), 5 photo(s)
+        - confirmed from previous renter: sensor_dust
+        + logged: ConditionReportSubmitted, TrustSignalRecorded, TrustSignalRecorded, ConditionDiffComputed, ConditionReportCountersigned, TrustSignalRecorded, TrustSignalRecorded
+        > damage_taxonomy.yaml v3 (ruleset fce31abe)
+
+  [11/28] Rental 2: Handover at the meetup point
+        actor: renter         clock: 2026-03-10T10:00:00Z
+        - item collected
+        + logged: ItemPickedUp
+
+  ~ clock advanced to 2026-03-12T18:00:00Z
+
+  [12/28] Rental 2: item returned
+        actor: renter         clock: 2026-03-12T18:00:00Z
+        - returned on time
+        + logged: ItemReturnInitiated, TrustSignalRecorded
+
+  [13/28] Rental 2: post-rental condition report
+        actor: renter         clock: 2026-03-12T18:00:00Z
+        - report cnd_25e928de2572 (post), 1 tag(s), 5 photo(s)
+        - confirmed from previous renter: sensor_dust
+        + logged: ConditionReportSubmitted, TrustSignalRecorded, TrustSignalRecorded, ConditionDiffComputed, ConditionReportCountersigned, TrustSignalRecorded, TrustSignalRecorded
+        > damage_taxonomy.yaml v3 (ruleset fce31abe)
+
+  [14/28] Rental 2: return accepted and settled
+        actor: system         clock: 2026-03-12T18:00:00Z
+        - return accepted (clean)
+        - settled 15550 cents
+        - graduation progress: clean_handovers 2/4, item_trust 600/700
+        + logged: ReturnAccepted, RentalClosed, TrustSignalRecorded, TrustSignalRecorded
+
+  ----- rental 3 -----
+
+  [15/28] Rental 3: reservation
+        actor: renter         clock: 2026-03-12T18:00:00Z
+        - rental rnt_d256428cf81a
+        - 3 day(s), rent 9600 cents
+        - premium 5950 cents, deposit 50000 cents
+        - risk flag: high_value_new_renter (value_band in [high, very_high] and user_trust < 650)
+        + logged: RiskFlagRaised, ItemReserved, InsuranceQuoted, InsuranceBound
+        > 5950 cents, because insurance_rates.yaml v2 (ruleset fce31abe) cell 'high|3|fair|days_3'
+
+  [16/28] Rental 3: Owner confirms the meetup
+        actor: system         clock: 2026-03-12T18:00:00Z
+        - meetup confirmed; no credential issued
+        + logged: MeetupConfirmed
+
+  ~ clock advanced to 2026-03-20T10:00:00Z
+
+  [17/28] Rental 3: pre-rental condition report
+        actor: renter         clock: 2026-03-20T10:00:00Z
+        - report cnd_9a29a6ad79df (pre), 1 tag(s), 5 photo(s)
+        - confirmed from previous renter: sensor_dust
+        + logged: ConditionReportSubmitted, TrustSignalRecorded, TrustSignalRecorded, ConditionDiffComputed, ConditionReportCountersigned, TrustSignalRecorded, TrustSignalRecorded
+        > damage_taxonomy.yaml v3 (ruleset fce31abe)
+
+  [18/28] Rental 3: Handover at the meetup point
+        actor: renter         clock: 2026-03-20T10:00:00Z
+        - item collected
+        + logged: ItemPickedUp
+
+  ~ clock advanced to 2026-03-22T18:00:00Z
+
+  [19/28] Rental 3: item returned
+        actor: renter         clock: 2026-03-22T18:00:00Z
+        - returned on time
+        + logged: ItemReturnInitiated, TrustSignalRecorded
+
+  [20/28] Rental 3: post-rental condition report
+        actor: renter         clock: 2026-03-22T18:00:00Z
+        - report cnd_5612c98caaf2 (post), 1 tag(s), 5 photo(s)
+        - confirmed from previous renter: sensor_dust
+        + logged: ConditionReportSubmitted, TrustSignalRecorded, TrustSignalRecorded, ConditionDiffComputed, ConditionReportCountersigned, TrustSignalRecorded, TrustSignalRecorded
+        > damage_taxonomy.yaml v3 (ruleset fce31abe)
+
+  [21/28] Rental 3: return accepted and settled
+        actor: system         clock: 2026-03-22T18:00:00Z
+        - return accepted (clean)
+        - settled 15550 cents
+        - graduation progress: clean_handovers 3/4, item_trust 650/700
+        + logged: ReturnAccepted, RentalClosed, TrustSignalRecorded, TrustSignalRecorded
+
+  ----- rental 4 -----
+
+  [22/28] Rental 4: reservation
+        actor: renter         clock: 2026-03-22T18:00:00Z
+        - rental rnt_82cca4747e23
+        - 3 day(s), rent 9600 cents
+        - premium 5950 cents, deposit 50000 cents
+        - risk flag: high_value_new_renter (value_band in [high, very_high] and user_trust < 650)
+        + logged: RiskFlagRaised, ItemReserved, InsuranceQuoted, InsuranceBound
+        > 5950 cents, because insurance_rates.yaml v2 (ruleset fce31abe) cell 'high|3|fair|days_3'
+
+  [23/28] Rental 4: Owner confirms the meetup
+        actor: system         clock: 2026-03-22T18:00:00Z
+        - meetup confirmed; no credential issued
+        + logged: MeetupConfirmed
+
+  ~ clock advanced to 2026-04-01T10:00:00Z
+
+  [24/28] Rental 4: pre-rental condition report
+        actor: renter         clock: 2026-04-01T10:00:00Z
+        - report cnd_cdeaee42d018 (pre), 1 tag(s), 5 photo(s)
+        - confirmed from previous renter: sensor_dust
+        + logged: ConditionReportSubmitted, TrustSignalRecorded, TrustSignalRecorded, ConditionDiffComputed, ConditionReportCountersigned, TrustSignalRecorded, TrustSignalRecorded
+        > damage_taxonomy.yaml v3 (ruleset fce31abe)
+
+  [25/28] Rental 4: Handover at the meetup point
+        actor: renter         clock: 2026-04-01T10:00:00Z
+        - item collected
+        + logged: ItemPickedUp
+
+  ~ clock advanced to 2026-04-03T18:00:00Z
+
+  [26/28] Rental 4: item returned
+        actor: renter         clock: 2026-04-03T18:00:00Z
+        - returned on time
+        + logged: ItemReturnInitiated, TrustSignalRecorded
+
+  [27/28] Rental 4: post-rental condition report
+        actor: renter         clock: 2026-04-03T18:00:00Z
+        - report cnd_2e313b888a61 (post), 1 tag(s), 5 photo(s)
+        - confirmed from previous renter: sensor_dust
+        + logged: ConditionReportSubmitted, TrustSignalRecorded, TrustSignalRecorded, ConditionDiffComputed, ConditionReportCountersigned, TrustSignalRecorded, TrustSignalRecorded
+        > damage_taxonomy.yaml v3 (ruleset fce31abe)
+
+  [28/28] Rental 4: return accepted and settled
+        actor: system         clock: 2026-04-03T18:00:00Z
+        - return accepted (clean)
+        - settled 15550 cents
+        - TIER GRADUATION: 3 -> 1 (4 consecutive clean handovers, item trust 700, 0 disputes)
+        + logged: ReturnAccepted, RentalClosed, TrustSignalRecorded, TrustSignalRecorded, TierGraduated
+        > graduated, because trust_weights.yaml v4 (ruleset fce31abe)
+
+ITEM - Bernina 570 QE
+------------------------
+  item_id            itm_a63f9d2ad2cc
+  owner              ferdi
+  category           sewing_machine
+  state              available
+  classified tier    3 (row R03)
+  effective tier     1 [GRADUATED]
+  replacement value  1950,00 EUR
+  purchase price     2290,00 EUR
+  day rate           32,00 EUR
+  attributes         accessory_count=few, enclosable=true, fragility=delicate, has_fixed_location=false, partner_node_available=false, requires_license=false, value_band=mid, weight_class=hand
+  clean handovers    4
+  item trust         700
+  citation           tier_rules.yaml v3 row R03 (ruleset fce31abe)
+
+HANDOVER PLAN - Tier 1: Fully Autonomous
+----------------------------------------
+  * per tier_rules.yaml v3 row R03 (ruleset fce31abe)
+
+  #  actor   step                                                               logs                                                                      
+  -  ------  -----------------------------------------------------------------  --------------------------------------------------------------------------
+  1  renter  Reserve item and rental window                                     item_id, renter_id, window_start_utc, window_end_utc, quoted_premium_cents
+  2  system  Issue time-boxed lockbox PIN                                       location_id, access_type, pin, valid_from_utc, valid_until_utc            
+  3  renter  Scan lockbox QR on arrival                                         location_id, qr_payload, validation_result                                
+  4  renter  Photograph item state before unlock (confirm or extend the chain)  report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id 
+  5  renter  Enter PIN, open lockbox, take item                                 location_id, pin_used, access_result                                      
+  6  renter  Return item to lockbox                                             location_id, gps_confirmed                                                
+  7  renter  Photograph item state after use                                    report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id 
+  8  system  Revoke PIN, close rental, settle                                   revoked_pin, settled_cents, trust_delta_renter, trust_delta_item          
+
+CONDITION CHAIN
+------------------------
+  #  phase  logged at             by     tags on record  new           report          
+  -  -----  --------------------  -----  --------------  ------------  ----------------
+  0  pre    2026-03-02T10:00:00Z  tobi   sensor_dust     +sensor_dust  cnd_9993789c2c86
+  1  post   2026-03-04T18:00:00Z  tobi   sensor_dust                   cnd_7f9881b2b951
+  2  pre    2026-03-10T10:00:00Z  karim  sensor_dust                   cnd_ced17a3d4d44
+  3  post   2026-03-12T18:00:00Z  karim  sensor_dust                   cnd_25e928de2572
+  4  pre    2026-03-20T10:00:00Z  maja   sensor_dust                   cnd_9a29a6ad79df
+  5  post   2026-03-22T18:00:00Z  maja   sensor_dust                   cnd_5612c98caaf2
+  6  pre    2026-04-01T10:00:00Z  anke   sensor_dust                   cnd_cdeaee42d018
+  7  post   2026-04-03T18:00:00Z  anke   sensor_dust                   cnd_2e313b888a61
+
+TRUST LEDGER - Bernina 570 QE
+-----------------------------
+  baseline  500
+
+  seq  signal                    delta  running
+  ---  ------------------------  -----  -------
+  96   ConditionReportSubmitted  +5     505    
+  106  ConditionReportSubmitted  +5     510    
+  114  RentalClosedClean         +40    550    
+  122  ConditionReportSubmitted  +5     555    
+  132  ConditionReportSubmitted  +5     560    
+  140  RentalClosedClean         +40    600    
+  148  ConditionReportSubmitted  +5     605    
+  158  ConditionReportSubmitted  +5     610    
+  166  RentalClosedClean         +40    650    
+  174  ConditionReportSubmitted  +5     655    
+  184  ConditionReportSubmitted  +5     660    
+  192  RentalClosedClean         +40    700    
+
+  final     700/1000 (good)
+  citation  trust_weights.yaml v4 (ruleset fce31abe)
+
+INVENTORY - Ferdinand Ohl
+-------------------------
+  item               category        tier  state      value        clean runs  trust
+  -----------------  --------------  ----  ---------  -----------  ----------  -----
+  Stihl MS 170       chainsaw        T1    available  210,00 EUR   0           500  
+  Prijon Seayak 2er  kayak           T2    available  980,00 EUR   0           500  
+  Bernina 570 QE     sewing_machine  T1*   available  1950,00 EUR  4           700  
+  Honda HSS 760A     snow_blower     T2    available  1680,00 EUR  0           500  
+  Humbaur HA 132513  trailer         T3    available  1750,00 EUR  0           500  
+
+FINAL STATE
+------------------------
+  events in log        193
+  log hash             74ec65faadfac20bdf87b589d7f9cb7965319a2cb052bf8474c438d726638a60
+  rentals              4 rnt_995da9=closed, rnt_1faf74=closed, rnt_d25642=closed, rnt_82cca4=closed
+  items not available  (none)
+  open disputes        0
+  purchase offers      0
+
+REPLAY CHECK
+------------------------
+  projection fingerprint        6850263c5ec16f378f0e29f626a23e578f4430807ff53bffce5852ab0b351340
+  rebuilt-from-log fingerprint  6850263c5ec16f378f0e29f626a23e578f4430807ff53bffce5852ab0b351340
+  identical                     YES

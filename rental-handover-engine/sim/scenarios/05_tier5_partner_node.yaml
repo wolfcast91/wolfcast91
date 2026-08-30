@@ -1,0 +1,90 @@
+id: tier5_partner_node
+title: "TIER 5 - THE HARDWARE STORE AS A HANDOVER NODE"
+subtitle: "Welding machine on consignment at Eisenwaren Schulz"
+seed: world
+clock_start_utc: "2026-03-01T08:00:00Z"
+premise: >
+  Anke owns a welder but does not want strangers in her workshop. She consigns it
+  to a hardware store two streets away. Custody sits with the partner, so the
+  partner's intake check replaces the peer handover entirely - and note WHY the
+  classifier said Tier 5: partner_node_available outranks everything except the
+  regulatory rule. It is an owner's deliberate choice about custody, not a
+  property of the welder.
+
+script:
+  - show: item
+    item: "@welder"
+  - show: plan
+    item: "@welder"
+
+  - cmd: ReserveItem
+    actor: renter
+    label: "Lena reserves the welder for a fabrication job"
+    as: r1
+    args: {item_id: "@welder", renter_handle: lena, window_start_utc: "2026-03-02T08:00:00Z", window_end_utc: "2026-03-05T08:00:00Z"}
+
+  - advance_to: "2026-03-02T07:30:00Z"
+  - note: >
+      Before any code is issued, the partner confirms the machine is physically
+      present and matches the last entry in its condition chain. That check is
+      what the platform is paying the intake fee for.
+  - cmd: ConfirmPartnerIntake
+    actor: partner_staff
+    label: "Eisenwaren Schulz confirms custody and chain match"
+    args: {rental_id: "@r1", confirmed_by_handle: depot_kai, chain_match_declared: true}
+
+  - cmd: GrantAccess
+    actor: system
+    label: "Collection code issued for the partner counter"
+    args: {rental_id: "@r1"}
+
+  - advance_to: "2026-03-02T09:20:00Z"
+  - cmd: SubmitConditionReport
+    actor: partner_staff
+    label: "Partner-witnessed condition report at release"
+    args:
+      rental_id: "@r1"
+      phase: partner_intake
+      submitted_by_handle: depot_kai
+      damage_tags: []
+      photo_descriptors:
+        front: "TransSteel 2200, front panel"
+        serial_plate: "SN-WLD-0025"
+        working_surface: "torch and earth clamp coiled"
+        partner_intake_label: "Schulz intake label 2026-03-02"
+  - cmd: OpenLockbox
+    actor: partner_staff
+    label: "Collection code presented, partner releases the machine"
+    args: {rental_id: "@r1"}
+
+  - advance_to: "2026-03-04T16:00:00Z"
+  - cmd: ReturnItem
+    actor: renter
+    label: "Lena drops the welder back at the counter"
+    args: {rental_id: "@r1"}
+  - cmd: SubmitConditionReport
+    actor: partner_staff
+    label: "Partner intake inspection on return - mask strap has gone missing"
+    args:
+      rental_id: "@r1"
+      phase: post
+      submitted_by_handle: depot_kai
+      damage_tags: [consumable_depleted]
+      accessory_manifest: [torch, earth_clamp]
+      photo_descriptors:
+        front: "front panel unchanged"
+        serial_plate: "SN-WLD-0025"
+        working_surface: "torch fine, gas nozzle worn"
+        partner_intake_label: "Schulz return label 2026-03-04"
+  - cmd: AcceptReturn
+    actor: system
+    label: "Return accepted despite the missing accessory being on record"
+    expect_rejection: false
+    args: {rental_id: "@r1"}
+
+  - show: chain
+    item: "@welder"
+  - show: rental
+    rental: "@r1"
+  - show: log
+    limit: 12

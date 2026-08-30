@@ -1,0 +1,93 @@
+id: tier2_yard
+title: "TIER 2 - 'THIRD PALLET, BLUE TARP'"
+subtitle: "Scaffolding, a gate code, and spatial instructions instead of a person"
+seed: world
+clock_start_utc: "2026-03-01T08:00:00Z"
+premise: >
+  A six-metre scaffold tower cannot go in a lockbox and nobody is driving across
+  town to point at it. Tier 2 replaces the human with two things: a time-boxed
+  gate code, and a content-addressed spatial instruction the renter photo-verifies
+  on arrival. The landmark photo is not analysed by anything - the renter's
+  DECLARATION that it matched is the logged fact, and the photo is the evidence
+  behind it if that declaration is ever challenged.
+
+script:
+  - show: item
+    item: "@scaffold"
+  - show: plan
+    item: "@scaffold"
+
+  - cmd: ReserveItem
+    actor: renter
+    label: "Tobias reserves the scaffold tower for a week"
+    as: r1
+    args: {item_id: "@scaffold", renter_handle: tobi, window_start_utc: "2026-03-02T07:00:00Z", window_end_utc: "2026-03-09T07:00:00Z"}
+  - cmd: GrantAccess
+    actor: system
+    label: "Gate code issued together with the spatial instruction"
+    args: {rental_id: "@r1"}
+  - show: rental
+    rental: "@r1"
+
+  - advance_to: "2026-03-02T07:40:00Z"
+  - cmd: VerifySpatialLandmark
+    actor: renter
+    label: "Renter finds the bay and photographs the landmark"
+    args: {rental_id: "@r1", landmark_photo_descriptor: "blue tarp over the third pallet, gate visible behind", match_declared: true}
+
+  - cmd: SubmitConditionReport
+    actor: renter
+    label: "Pre-load-out condition report, full six-part manifest"
+    args:
+      rental_id: "@r1"
+      phase: pre
+      submitted_by_handle: tobi
+      damage_tags: [scuff_paint]
+      photo_descriptors:
+        in_place_wide: "tower stacked in bay 3"
+        front: "frames and braces"
+        working_surface: "platform decks"
+        landmark: "blue tarp, third pallet"
+  - cmd: OpenLockbox
+    actor: renter
+    label: "Gate code entered, self-service load-out"
+    args: {rental_id: "@r1"}
+
+  - advance_to: "2026-03-08T15:00:00Z"
+  - cmd: ReturnItem
+    actor: renter
+    label: "Tower returned to its marked bay"
+    args: {rental_id: "@r1"}
+  - note: >
+      One guardrail did not come back. A missing accessory is a blocking tag, so
+      the item goes to damage_hold rather than straight back on the market - and
+      the owner, not the platform, decides what to do about it.
+  - cmd: SubmitConditionReport
+    actor: renter
+    label: "Post-rental report - one guardrail short"
+    args:
+      rental_id: "@r1"
+      phase: post
+      submitted_by_handle: tobi
+      damage_tags: [scuff_paint, missing_accessory]
+      accessory_manifest: [castors, platform_a, platform_b, toeboard, outrigger]
+      photo_descriptors:
+        in_place_wide: "tower back in bay 3"
+        front: "frames and braces"
+        working_surface: "platform decks"
+        landmark: "blue tarp, third pallet"
+  - cmd: ReportDamage
+    actor: owner
+    label: "Lena claims the missing guardrail"
+    args: {rental_id: "@r1", reported_by_handle: lena, tags: [missing_accessory]}
+  - cmd: WaiveDamage
+    actor: owner
+    label: "Tobias finds it in his van; Lena waives the claim"
+    args: {rental_id: "@r1", waived_by_handle: lena}
+
+  - show: chain
+    item: "@scaffold"
+  - show: item
+    item: "@scaffold"
+  - show: inventory
+    owner: lena

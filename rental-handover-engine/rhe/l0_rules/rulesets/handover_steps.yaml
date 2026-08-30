@@ -1,0 +1,78 @@
+# handover_steps.yaml
+# L0 RULESET — The ordered handover choreography per tier, and the exact data
+# each step writes to the event log. The simulator renders this file directly;
+# it knows no step names of its own.
+
+ruleset_version: 2
+schema: handover_steps/1
+
+tiers:
+  1:
+    name: Fully Autonomous
+    human_contact: none
+    photo_slots: [front, serial_plate, working_surface]
+    steps:
+      - {step_index: 1, id: t1_reserve,        actor: renter, label: "Reserve item and rental window",                                   event: ItemReserved,             logs: [item_id, renter_id, window_start_utc, window_end_utc, quoted_premium_cents]}
+      - {step_index: 2, id: t1_pin_issue,      actor: system, label: "Issue time-boxed lockbox PIN",                                      event: AccessGranted,            logs: [location_id, access_type, pin, valid_from_utc, valid_until_utc]}
+      - {step_index: 3, id: t1_arrive_scan,    actor: renter, label: "Scan lockbox QR on arrival",                                        event: AccessCodeValidated,      logs: [location_id, qr_payload, validation_result]}
+      - {step_index: 4, id: t1_pre_condition,  actor: renter, label: "Photograph item state before unlock (confirm or extend the chain)", event: ConditionReportSubmitted, logs: [report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id]}
+      - {step_index: 5, id: t1_unlock,         actor: renter, label: "Enter PIN, open lockbox, take item",                                event: ItemPickedUp,             logs: [location_id, pin_used, access_result]}
+      - {step_index: 6, id: t1_return_place,   actor: renter, label: "Return item to lockbox",                                            event: ItemReturnInitiated,      logs: [location_id, gps_confirmed]}
+      - {step_index: 7, id: t1_post_condition, actor: renter, label: "Photograph item state after use",                                   event: ConditionReportSubmitted, logs: [report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id]}
+      - {step_index: 8, id: t1_close,          actor: system, label: "Revoke PIN, close rental, settle",                                  event: RentalClosed,             logs: [revoked_pin, settled_cents, trust_delta_renter, trust_delta_item]}
+
+  2:
+    name: Semi-Autonomous
+    human_contact: none
+    photo_slots: [in_place_wide, front, working_surface, landmark]
+    steps:
+      - {step_index: 1, id: t2_reserve,        actor: renter, label: "Reserve item and load-out window",                       event: ItemReserved,             logs: [item_id, renter_id, window_start_utc, window_end_utc, quoted_premium_cents]}
+      - {step_index: 2, id: t2_gate_code,      actor: system, label: "Issue yard gate code and spatial instructions",          event: AccessGranted,            logs: [location_id, access_type, pin, valid_from_utc, valid_until_utc, spatial_instruction_id]}
+      - {step_index: 3, id: t2_locate,         actor: renter, label: "Follow spatial instruction, photo-verify the landmark",  event: SpatialLandmarkVerified,  logs: [spatial_instruction_id, landmark_photo_slot, match_declared]}
+      - {step_index: 4, id: t2_pre_condition,  actor: renter, label: "Photograph item state before load-out",                  event: ConditionReportSubmitted, logs: [report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id]}
+      - {step_index: 5, id: t2_loadout,        actor: renter, label: "Self-service load-out",                                  event: ItemPickedUp,             logs: [location_id, pin_used, access_result]}
+      - {step_index: 6, id: t2_return_place,   actor: renter, label: "Return item to its marked bay",                          event: ItemReturnInitiated,      logs: [location_id, gps_confirmed, spatial_instruction_id]}
+      - {step_index: 7, id: t2_post_condition, actor: renter, label: "Photograph item in place after return",                  event: ConditionReportSubmitted, logs: [report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id]}
+      - {step_index: 8, id: t2_close,          actor: system, label: "Revoke gate code, close rental, settle",                 event: RentalClosed,             logs: [revoked_pin, settled_cents, trust_delta_renter, trust_delta_item]}
+
+  3:
+    name: Assisted Meetup
+    human_contact: both_parties
+    photo_slots: [front, rear, serial_plate, working_surface, accessory_tray]
+    steps:
+      - {step_index: 1, id: t3_reserve,        actor: renter, label: "Reserve item and propose meetup window",              event: ItemReserved,                 logs: [item_id, renter_id, window_start_utc, window_end_utc, quoted_premium_cents]}
+      - {step_index: 2, id: t3_meet_confirm,   actor: owner,  label: "Owner confirms meetup point and time",                event: MeetupConfirmed,              logs: [location_id, access_type, meetup_utc]}
+      - {step_index: 3, id: t3_joint_check,    actor: both,   label: "Walk the shared checklist together, item by item",    event: ConditionReportSubmitted,     logs: [report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id, accessory_manifest]}
+      - {step_index: 4, id: t3_dual_sign,      actor: both,   label: "Both parties digitally sign the condition report",    event: ConditionReportCountersigned, logs: [report_id, signed_by_owner, signed_by_renter]}
+      - {step_index: 5, id: t3_handover,       actor: owner,  label: "Physical handover",                                   event: ItemPickedUp,                 logs: [location_id, pin_used, access_result]}
+      - {step_index: 6, id: t3_return_meet,    actor: both,   label: "Return meetup, joint checklist again",                event: ItemReturnInitiated,          logs: [location_id, gps_confirmed]}
+      - {step_index: 7, id: t3_post_condition, actor: both,   label: "Post-rental condition report, countersigned",         event: ConditionReportSubmitted,     logs: [report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id, accessory_manifest]}
+      - {step_index: 8, id: t3_close,          actor: system, label: "Close rental, settle, evaluate tier graduation",      event: RentalClosed,                 logs: [revoked_pin, settled_cents, trust_delta_renter, trust_delta_item]}
+
+  4:
+    name: Certified / Licensed
+    human_contact: depot_staff
+    photo_slots: [front, rear, serial_plate, hour_meter, inspection_sticker]
+    steps:
+      - {step_index: 1, id: t4_reserve,        actor: renter,      label: "Request machine and rental window (B2B account only)",      event: ItemReserved,             logs: [item_id, renter_id, window_start_utc, window_end_utc, quoted_premium_cents]}
+      - {step_index: 2, id: t4_cert_check,     actor: system,      label: "Verify operator certification against required set",        event: CertificationVerified,    logs: [operator_id, required_certificates, presented_certificates, verification_result]}
+      - {step_index: 3, id: t4_contract,       actor: both,        label: "Execute rental contract and liability annex",               event: ContractExecuted,         logs: [contract_id, liability_annex_id, signed_by_owner, signed_by_renter]}
+      - {step_index: 4, id: t4_depot_release,  actor: depot_staff, label: "Depot releases machine against logged operator ID",         event: ItemPickedUp,             logs: [location_id, pin_used, access_result, operator_id]}
+      - {step_index: 5, id: t4_pre_condition,  actor: depot_staff, label: "Staff-run inspection record (DGUV-style checklist)",        event: ConditionReportSubmitted, logs: [report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id, inspection_checklist_id]}
+      - {step_index: 6, id: t4_return_depot,   actor: depot_staff, label: "Machine returned to depot, staff intake inspection",        event: ItemReturnInitiated,      logs: [location_id, gps_confirmed, operator_id]}
+      - {step_index: 7, id: t4_post_condition, actor: depot_staff, label: "Staff post-rental inspection record",                       event: ConditionReportSubmitted, logs: [report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id, inspection_checklist_id]}
+      - {step_index: 8, id: t4_close,          actor: system,      label: "Close contract, settle, file inspection record",            event: RentalClosed,             logs: [revoked_pin, settled_cents, trust_delta_renter, trust_delta_item]}
+
+  5:
+    name: Depot / Partner Node
+    human_contact: partner_staff
+    photo_slots: [front, serial_plate, working_surface, partner_intake_label]
+    steps:
+      - {step_index: 1, id: t5_reserve,          actor: renter,        label: "Reserve item held at partner node",                        event: ItemReserved,             logs: [item_id, renter_id, window_start_utc, window_end_utc, quoted_premium_cents]}
+      - {step_index: 2, id: t5_partner_intake,   actor: partner_staff, label: "Partner confirms item present and matching last entry",    event: PartnerIntakeConfirmed,   logs: [partner_node_id, item_id, chain_match_declared, prev_report_id]}
+      - {step_index: 3, id: t5_collection_code,  actor: system,        label: "Issue collection code for the partner counter or locker",  event: AccessGranted,            logs: [location_id, access_type, pin, valid_from_utc, valid_until_utc]}
+      - {step_index: 4, id: t5_pre_condition,    actor: partner_staff, label: "Partner-witnessed condition report at release",            event: ConditionReportSubmitted, logs: [report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id]}
+      - {step_index: 5, id: t5_release,          actor: partner_staff, label: "Partner releases item against collection code",            event: ItemPickedUp,             logs: [location_id, pin_used, access_result, partner_node_id]}
+      - {step_index: 6, id: t5_return_drop,      actor: renter,        label: "Drop item back at the partner node",                       event: ItemReturnInitiated,      logs: [location_id, gps_confirmed, partner_node_id]}
+      - {step_index: 7, id: t5_partner_return,   actor: partner_staff, label: "Partner intake inspection on return",                      event: ConditionReportSubmitted, logs: [report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id]}
+      - {step_index: 8, id: t5_close,            actor: system,        label: "Revoke collection code, close rental, settle partner fee", event: RentalClosed,             logs: [revoked_pin, settled_cents, trust_delta_renter, trust_delta_item, partner_fee_cents]}

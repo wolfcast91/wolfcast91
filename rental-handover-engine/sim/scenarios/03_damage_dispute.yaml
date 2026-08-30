@@ -1,0 +1,138 @@
+id: damage_dispute
+title: "TWO RENTERS DISAGREE - AND THE SYSTEM REFUSES TO DECIDE"
+subtitle: "Pressure washer, a cracked housing that appears between renters, and a human in the loop"
+seed: world
+clock_start_utc: "2026-03-01T08:00:00Z"
+premise: >
+  Karim rents the pressure washer and returns it logging nothing new. Anke rents
+  it next and photographs a cracked housing before she has touched it. The chain
+  now contains a contradiction. No model looks at the photos. The system records
+  both claims, applies the ONE rule it has - a blocking tag on a return moves the
+  item to damage_hold - and routes the disagreement to a person. The only thing
+  precedence.yaml decides is which claim the human reads first.
+
+script:
+  - show: item
+    item: "@pressure"
+
+  - note: "----- Karim's rental: clean, or so he logs -----"
+  - cmd: ReserveItem
+    actor: renter
+    label: "Karim reserves the pressure washer"
+    as: r1
+    args: {item_id: "@pressure", renter_handle: karim, window_start_utc: "2026-03-02T08:00:00Z", window_end_utc: "2026-03-04T08:00:00Z"}
+  - cmd: GrantAccess
+    actor: system
+    label: "Lockbox PIN issued"
+    args: {rental_id: "@r1"}
+  - advance_to: "2026-03-02T10:30:00Z"
+  - cmd: SubmitConditionReport
+    actor: renter
+    label: "Karim's pre-rental report - establishes the chain baseline"
+    args:
+      rental_id: "@r1"
+      phase: pre
+      submitted_by_handle: karim
+      damage_tags: [scuff_paint]
+      photo_descriptors: {front: "body scuffed near the handle", serial_plate: "SN-PRW-0007", working_surface: "lance and nozzle clean"}
+  - cmd: OpenLockbox
+    actor: renter
+    label: "Collected"
+    args: {rental_id: "@r1"}
+  - advance_to: "2026-03-03T19:00:00Z"
+  - cmd: ReturnItem
+    actor: renter
+    label: "Returned"
+    args: {rental_id: "@r1"}
+  - cmd: SubmitConditionReport
+    actor: renter
+    label: "Karim's post-rental report - he logs no change"
+    args:
+      rental_id: "@r1"
+      phase: post
+      submitted_by_handle: karim
+      damage_tags: [scuff_paint]
+      photo_descriptors: {front: "same scuff", serial_plate: "SN-PRW-0007", working_surface: "lance rinsed"}
+  - cmd: AcceptReturn
+    actor: system
+    label: "Return accepted, rental closed clean"
+    args: {rental_id: "@r1"}
+
+  - note: "----- Anke's rental: she sees something Karim did not log -----"
+  - advance_to: "2026-03-06T08:00:00Z"
+  - cmd: ReserveItem
+    actor: renter
+    label: "Anke reserves the same washer"
+    as: r2
+    args: {item_id: "@pressure", renter_handle: anke, window_start_utc: "2026-03-07T08:00:00Z", window_end_utc: "2026-03-09T08:00:00Z"}
+  - cmd: GrantAccess
+    actor: system
+    label: "Lockbox PIN issued"
+    args: {rental_id: "@r2"}
+  - advance_to: "2026-03-07T09:05:00Z"
+  - note: >
+      This is the moment the whole condition-chain idea earns its keep. Anke is
+      documenting BEFORE she uses it, against what the previous renter left on
+      record. A tag appearing here is attributable to the gap between rentals.
+  - cmd: SubmitConditionReport
+    actor: renter
+    label: "Anke's pre-rental report - a crack Karim never logged"
+    args:
+      rental_id: "@r2"
+      phase: pre
+      submitted_by_handle: anke
+      damage_tags: [scuff_paint, crack_housing]
+      photo_descriptors: {front: "hairline crack across the pump housing", serial_plate: "SN-PRW-0007", working_surface: "lance fine"}
+  - cmd: OpenLockbox
+    actor: renter
+    label: "Collected anyway - she needs it today"
+    args: {rental_id: "@r2"}
+  - advance_to: "2026-03-08T18:00:00Z"
+  - cmd: ReturnItem
+    actor: renter
+    label: "Returned"
+    args: {rental_id: "@r2"}
+  - cmd: SubmitConditionReport
+    actor: renter
+    label: "Anke's post-rental report - unchanged from how she found it"
+    args:
+      rental_id: "@r2"
+      phase: post
+      submitted_by_handle: anke
+      damage_tags: [scuff_paint, crack_housing]
+      photo_descriptors: {front: "same crack, no growth", serial_plate: "SN-PRW-0007", working_surface: "lance rinsed"}
+
+  - note: >
+      Maja opens a damage claim against Anke's rental, because Anke's is the one
+      that ended with the crack on record. Anke disputes it and points at her own
+      pre-rental photos. The system has no opinion about who is right.
+  - cmd: ReportDamage
+    actor: owner
+    label: "Maja claims damage against the rental"
+    args: {rental_id: "@r2", reported_by_handle: maja, tags: [crack_housing]}
+  - cmd: OpenDispute
+    actor: renter
+    label: "Anke disputes it, citing her pre-rental report"
+    as: d1
+    args: {rental_id: "@r2", opened_by_handle: anke, contested_tags: [crack_housing]}
+
+  - show: chain
+    item: "@pressure"
+  - show: risk_flags
+
+  - note: >
+      A human resolves it. The guard on the closing transition is literally named
+      human_resolution_recorded - the rental physically cannot close until a
+      person's id is attached to the outcome.
+  - advance_to: "2026-03-12T11:00:00Z"
+  - cmd: ResolveDispute
+    actor: system
+    label: "Trust and safety rules no fault: Anke's pre-rental evidence stands"
+    args: {dispute_id: "@d1", resolved_by_handle: lena, outcome: no_fault}
+
+  - show: trust
+    user: anke
+  - show: item
+    item: "@pressure"
+  - show: log
+    limit: 16

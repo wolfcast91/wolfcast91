@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.venv/
+build/
+*.sqlite3
+sim/out/

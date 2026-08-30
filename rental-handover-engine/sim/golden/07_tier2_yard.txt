@@ -1,0 +1,179 @@
+================================================================================================
+  TIER 2 - 'THIRD PALLET, BLUE TARP'
+  Scaffolding, a gate code, and spatial instructions instead of a person
+================================================================================================
+  scenario      tier2_yard
+  seed world    world
+  clock start   2026-03-01T08:00:00Z
+  ruleset hash  fce31abef79c24b1f93bf58295be7199fe70d8625ceb3e8c55b34272250ce049
+
+    A six-metre scaffold tower cannot go in a lockbox and nobody is driving across town to point at it. Tier 2 replaces the human with two things: a time-boxed gate code, and a content-addressed spatial instruction the renter photo-verifies on arrival. The landmark photo is not analysed by anything - the renter's DECLARATION that it matched is the logged fact, and the photo is the evidence behind it if that declaration is ever challenged.
+
+SEED WORLD LOADED
+------------------------
+  users          8
+  locations      6
+  partner nodes  2
+  items          28
+  events so far  88
+
+ITEM - Zarges Rollgeruest 6m
+----------------------------
+  item_id            itm_cd6ffb769759
+  owner              lena
+  category           scaffolding
+  state              available
+  classified tier    2 (row R07)
+  effective tier     2
+  replacement value  920,00 EUR
+  purchase price     1180,00 EUR
+  day rate           39,00 EUR
+  attributes         accessory_count=many, enclosable=false, fragility=robust, has_fixed_location=true, partner_node_available=false, requires_license=false, value_band=mid, weight_class=two_person
+  clean handovers    0
+  item trust         500
+  citation           tier_rules.yaml v3 row R07 (ruleset fce31abe)
+
+HANDOVER PLAN - Tier 2: Semi-Autonomous
+---------------------------------------
+  * per tier_rules.yaml v3 row R07 (ruleset fce31abe)
+
+  #  actor   step                                                   logs                                                                                  
+  -  ------  -----------------------------------------------------  --------------------------------------------------------------------------------------
+  1  renter  Reserve item and load-out window                       item_id, renter_id, window_start_utc, window_end_utc, quoted_premium_cents            
+  2  system  Issue yard gate code and spatial instructions          location_id, access_type, pin, valid_from_utc, valid_until_utc, spatial_instruction_id
+  3  renter  Follow spatial instruction, photo-verify the landmark  spatial_instruction_id, landmark_photo_slot, match_declared                           
+  4  renter  Photograph item state before load-out                  report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id             
+  5  renter  Self-service load-out                                  location_id, pin_used, access_result                                                  
+  6  renter  Return item to its marked bay                          location_id, gps_confirmed, spatial_instruction_id                                    
+  7  renter  Photograph item in place after return                  report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id             
+  8  system  Revoke gate code, close rental, settle                 revoked_pin, settled_cents, trust_delta_renter, trust_delta_item                      
+
+  [1/9] Tobias reserves the scaffold tower for a week
+        actor: renter         clock: 2026-03-01T08:00:00Z
+        - rental rnt_9dc07d807723
+        - 7 day(s), rent 27300 cents
+        - premium 2975 cents, deposit 10000 cents
+        + logged: ItemReserved, InsuranceQuoted, InsuranceBound
+        > 2975 cents, because insurance_rates.yaml v2 (ruleset fce31abe) cell 'mid|2|fair|days_7'
+
+  [2/9] Gate code issued together with the spatial instruction
+        actor: system         clock: 2026-03-01T08:00:00Z
+        - gate_code credential 2203 valid 2026-03-02T07:00:00Z -> 2026-03-09T07:00:00Z
+        - derived from sha256(rental_id=rnt_9dc07d807723, location_id=loc_782068193cdd, valid_from_epoch=1772434800)
+        + logged: AccessGranted
+
+RENTAL
+------------------------
+  rental_id  rnt_9dc07d807723
+  state      access_granted
+  tier       2
+  window     2026-03-02T07:00:00Z -> 2026-03-09T07:00:00Z
+  rent       273,00 EUR
+  premium    29,75 EUR
+  deposit    100,00 EUR
+  coverage   basic
+  insurance  bound
+  policy     pol_7177dbf10107
+  settled    -
+
+  ~ clock advanced to 2026-03-02T07:40:00Z
+
+  [3/9] Renter finds the bay and photographs the landmark
+        actor: renter         clock: 2026-03-02T07:40:00Z
+        - instruction: Through the green gate, third pallet on the left, under the blue tarp
+        - landmark matched, photographed into slot 'landmark'
+        + logged: SpatialLandmarkVerified
+
+  [4/9] Pre-load-out condition report, full six-part manifest
+        actor: renter         clock: 2026-03-02T07:40:00Z
+        - report cnd_eaac14c19c39 (pre), 1 tag(s), 4 photo(s)
+        - chain baseline: scuff_paint [cosmetic]
+        + logged: ConditionReportSubmitted, TrustSignalRecorded, TrustSignalRecorded, ConditionDiffComputed
+        > damage_taxonomy.yaml v3 (ruleset fce31abe)
+
+  [5/9] Gate code entered, self-service load-out
+        actor: renter         clock: 2026-03-02T07:40:00Z
+        - credential accepted (accepted)
+        - item collected
+        + logged: AccessCodeValidated, ItemPickedUp
+
+  ~ clock advanced to 2026-03-08T15:00:00Z
+
+  [6/9] Tower returned to its marked bay
+        actor: renter         clock: 2026-03-08T15:00:00Z
+        - returned on time
+        + logged: ItemReturnInitiated, TrustSignalRecorded
+
+  One guardrail did not come back. A missing accessory is a blocking tag, so the item goes to damage_hold rather than straight back on the market - and the owner, not the platform, decides what to do about it.
+
+  [7/9] Post-rental report - one guardrail short
+        actor: renter         clock: 2026-03-08T15:00:00Z
+        - report cnd_e93cb66ef6d1 (post), 2 tag(s), 4 photo(s)
+        - NEW SINCE LAST RENTER: missing_accessory [major]
+        - confirmed from previous renter: scuff_paint
+        - MISSING: guardrail
+        + logged: ConditionReportSubmitted, TrustSignalRecorded, TrustSignalRecorded, ConditionDiffComputed, TrustSignalRecorded
+        > damage_taxonomy.yaml v3 (ruleset fce31abe)
+
+  [8/9] Lena claims the missing guardrail
+        actor: owner          clock: 2026-03-08T15:00:00Z
+        - damage claimed: missing_accessory
+        + logged: DamageReported, TrustSignalRecorded
+
+  [9/9] Tobias finds it in his van; Lena waives the claim
+        actor: owner          clock: 2026-03-08T15:00:00Z
+        - owner waived the claim
+        - settled 30275 cents
+        + logged: DamageWaived, RentalClosed, TrustSignalRecorded
+
+CONDITION CHAIN
+------------------------
+  #  phase  logged at             by    tags on record                  new                 report          
+  -  -----  --------------------  ----  ------------------------------  ------------------  ----------------
+  0  pre    2026-03-02T07:40:00Z  tobi  scuff_paint                     +scuff_paint        cnd_eaac14c19c39
+  1  post   2026-03-08T15:00:00Z  tobi  missing_accessory, scuff_paint  +missing_accessory  cnd_e93cb66ef6d1
+
+ITEM - Zarges Rollgeruest 6m
+----------------------------
+  item_id            itm_cd6ffb769759
+  owner              lena
+  category           scaffolding
+  state              available
+  classified tier    2 (row R07)
+  effective tier     2
+  replacement value  920,00 EUR
+  purchase price     1180,00 EUR
+  day rate           39,00 EUR
+  attributes         accessory_count=many, enclosable=false, fragility=robust, has_fixed_location=true, partner_node_available=false, requires_license=false, value_band=mid, weight_class=two_person
+  clean handovers    0
+  item trust         475
+  citation           tier_rules.yaml v3 row R07 (ruleset fce31abe)
+
+INVENTORY - Lena Sommerfeld
+---------------------------
+  item                     category         tier  state      value          clean runs  trust
+  -----------------------  ---------------  ----  ---------  -------------  ----------  -----
+  Atika Comet 130          cement_mixer     T2    available  340,00 EUR     0           500  
+  Lagler Hummel            floor_sander     T2    available  2400,00 EUR    0           500  
+  Honda EU22i              generator        T1    available  890,00 EUR     0           500  
+  Hymer 4m Schiebeleiter   ladder           T2    available  150,00 EUR     0           500  
+  Kubota KX019-4           mini_excavator   T4    available  39000,00 EUR   0           500  
+  Liebherr LTM 1030        mobile_crane     T4    available  280000,00 EUR  0           500  
+  Toolport 6x12 Partyzelt  party_tent       T2    available  680,00 EUR     0           500  
+  Wacker Neuson VP1135A    plate_compactor  T2    available  1450,00 EUR    0           500  
+  Zarges Rollgeruest 6m    scaffolding      T2    available  920,00 EUR     0           475  
+
+FINAL STATE
+------------------------
+  events in log        111
+  log hash             2df7f4fa55d2b4b4597dc275b27c5eac39e2f4d22f4d2b108ef5847d72fff48b
+  rentals              1 rnt_9dc07d=closed
+  items not available  (none)
+  open disputes        0
+  purchase offers      0
+
+REPLAY CHECK
+------------------------
+  projection fingerprint        14f943c953e1652d2ac2e16a95476194ee9a0bcd5ba9b443d1eccf81b84feeab
+  rebuilt-from-log fingerprint  14f943c953e1652d2ac2e16a95476194ee9a0bcd5ba9b443d1eccf81b84feeab
+  identical                     YES

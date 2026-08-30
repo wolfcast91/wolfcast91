@@ -1,0 +1,96 @@
+# trust_weights.yaml
+# L0 RULESET — Integer trust arithmetic.
+#
+# Trust is a pure integer fold over the event log, ALWAYS recomputed from zero.
+# It is never incrementally mutated and never stored as truth -- the projection
+# table holds a cached copy that a replay is allowed to overwrite.
+# Scale: 0..1000. No floats anywhere.
+
+ruleset_version: 4
+schema: trust_weights/1
+
+scale: {min: 0, max: 1000}
+
+subjects:
+  user:
+    baseline: 500
+    baseline_notes: "Unverified new account. ID verification is the first real signal."
+  item:
+    baseline: 500
+    baseline_notes: "A newly listed item is neither proven nor suspect."
+
+# Applied in event_seq order. Every delta is an integer; the running total is
+# clamped to [min, max] after EACH event, so ordering is significant and fixed.
+user_weights:
+  IdentityVerified:            120
+  RentalClosedClean:            25
+  RentalClosedWithDamageWaived:  5
+  ConditionReportSubmitted:      4
+  ConditionReportCountersigned:  6
+  ReturnedOnTime:               10
+  ReturnedLate:                -40
+  RentalMarkedOverdue:         -60
+  DamageReportedAgainstRenter: -90
+  DisputeOpenedAgainstRenter:  -50
+  DisputeResolvedAgainstRenter: -150
+  DisputeResolvedForRenter:     30
+  ItemDeclaredLost:           -400
+  ReservationCancelledLate:    -15
+  PurchaseCompleted:            20
+
+# An item earns +50 per clean handover (one closure plus two chain entries), so
+# the four clean handovers Tier 3 -> Tier 1 graduation demands land the item on
+# exactly the 700 trust the same rule requires. The two thresholds are tuned
+# against each other on purpose: graduation should be reachable by doing the
+# thing well four times, and not reachable any other way.
+item_weights:
+  ItemListed:                    0
+  RentalClosedClean:            40
+  ConditionReportSubmitted:      5
+  NewDamageAppeared:           -35
+  DamageRepaired:               25
+  DisputeOpenedOnItem:         -20
+  ReturnedLate:                 -5
+  ItemRecovered:               -60
+
+# Bands used by the insurance rate lookup and by the fraud rules below.
+trust_bands:
+  - {band: new,       min: 0,   max: 399}
+  - {band: fair,      min: 400, max: 649}
+  - {band: good,      min: 650, max: 849}
+  - {band: excellent, min: 850, max: 1000}
+
+# Tier graduation. An item earns a cheaper handover mechanism by proving it.
+# Explicit integer thresholds, no heuristics.
+tier_graduation:
+  enabled_paths:
+    - from_tier: 3
+      to_tier: 1
+      requires:
+        clean_handovers: 4                 # consecutive RentalClosedClean on this item
+        min_item_trust: 700
+        max_disputes_lifetime: 0
+        item_must_be_enclosable: true      # a graduation cannot violate physics
+      notes: "The Tier 3 -> Tier 1 path. Non-enclosable items can never take it."
+    - from_tier: 3
+      to_tier: 2
+      requires:
+        clean_handovers: 6
+        min_item_trust: 750
+        max_disputes_lifetime: 0
+        item_must_be_enclosable: false
+      notes: "Bulky Tier 3 items graduate to unattended yard load-out instead."
+  demotion:
+    on_new_blocking_damage: true
+    on_dispute_resolved_against_owner: true
+    demote_to_original_tier: true
+    notes: "Graduation is a privilege, always revocable to the classifier's tier."
+
+# Hard-rule fraud/risk flags. Every flag cites the exact rule that fired.
+risk_flags:
+  - {flag_id: unverified_identity,   rule: "id_verified == false",            severity: block}
+  - {flag_id: repeat_disputes,       rule: "n_disputes_90d >= 2",             severity: block}
+  - {flag_id: overdue_history,       rule: "overdue_returns_lifetime >= 1",   severity: review}
+  - {flag_id: low_trust,             rule: "user_trust < 400",                severity: review}
+  - {flag_id: lost_item_history,     rule: "items_declared_lost_lifetime >= 1", severity: block}
+  - {flag_id: high_value_new_renter, rule: "value_band in [high, very_high] and user_trust < 650", severity: review}

@@ -1,0 +1,242 @@
+================================================================================================
+  TWO RENTERS DISAGREE - AND THE SYSTEM REFUSES TO DECIDE
+  Pressure washer, a cracked housing that appears between renters, and a human in the loop
+================================================================================================
+  scenario      damage_dispute
+  seed world    world
+  clock start   2026-03-01T08:00:00Z
+  ruleset hash  fce31abef79c24b1f93bf58295be7199fe70d8625ceb3e8c55b34272250ce049
+
+    Karim rents the pressure washer and returns it logging nothing new. Anke rents it next and photographs a cracked housing before she has touched it. The chain now contains a contradiction. No model looks at the photos. The system records both claims, applies the ONE rule it has - a blocking tag on a return moves the item to damage_hold - and routes the disagreement to a person. The only thing precedence.yaml decides is which claim the human reads first.
+
+SEED WORLD LOADED
+------------------------
+  users          8
+  locations      6
+  partner nodes  2
+  items          28
+  events so far  88
+
+ITEM - Kaercher K5 Premium
+--------------------------
+  item_id            itm_8c0a4f2b4a2a
+  owner              maja
+  category           pressure_washer
+  state              available
+  classified tier    1 (row R10)
+  effective tier     1
+  replacement value  260,00 EUR
+  purchase price     299,00 EUR
+  day rate           12,00 EUR
+  attributes         accessory_count=few, enclosable=true, fragility=robust, has_fixed_location=false, partner_node_available=false, requires_license=false, value_band=mid, weight_class=two_person
+  clean handovers    0
+  item trust         500
+  citation           tier_rules.yaml v3 row R10 (ruleset fce31abe)
+
+  ----- Karim's rental: clean, or so he logs -----
+
+  [1/16] Karim reserves the pressure washer
+        actor: renter         clock: 2026-03-01T08:00:00Z
+        - rental rnt_331d3a4c28db
+        - 2 day(s), rent 2400 cents
+        - premium 1650 cents, deposit 10000 cents
+        + logged: ItemReserved, InsuranceQuoted, InsuranceBound
+        > 1650 cents, because insurance_rates.yaml v2 (ruleset fce31abe) cell 'mid|1|fair|days_3'
+
+  [2/16] Lockbox PIN issued
+        actor: system         clock: 2026-03-01T08:00:00Z
+        - pin credential 127418 valid 2026-03-02T08:00:00Z -> 2026-03-04T08:00:00Z
+        - derived from sha256(rental_id=rnt_331d3a4c28db, location_id=loc_5f72a7f82c57, valid_from_epoch=1772438400)
+        + logged: AccessGranted
+
+  ~ clock advanced to 2026-03-02T10:30:00Z
+
+  [3/16] Karim's pre-rental report - establishes the chain baseline
+        actor: renter         clock: 2026-03-02T10:30:00Z
+        - report cnd_3b0784725b26 (pre), 1 tag(s), 3 photo(s)
+        - chain baseline: scuff_paint [cosmetic]
+        + logged: ConditionReportSubmitted, TrustSignalRecorded, TrustSignalRecorded, ConditionDiffComputed
+        > damage_taxonomy.yaml v3 (ruleset fce31abe)
+
+  [4/16] Collected
+        actor: renter         clock: 2026-03-02T10:30:00Z
+        - credential accepted (accepted)
+        - item collected
+        + logged: AccessCodeValidated, ItemPickedUp
+
+  ~ clock advanced to 2026-03-03T19:00:00Z
+
+  [5/16] Returned
+        actor: renter         clock: 2026-03-03T19:00:00Z
+        - returned on time
+        + logged: ItemReturnInitiated, TrustSignalRecorded
+
+  [6/16] Karim's post-rental report - he logs no change
+        actor: renter         clock: 2026-03-03T19:00:00Z
+        - report cnd_f861d40af663 (post), 1 tag(s), 3 photo(s)
+        - confirmed from previous renter: scuff_paint
+        + logged: ConditionReportSubmitted, TrustSignalRecorded, TrustSignalRecorded, ConditionDiffComputed
+        > damage_taxonomy.yaml v3 (ruleset fce31abe)
+
+  [7/16] Return accepted, rental closed clean
+        actor: system         clock: 2026-03-03T19:00:00Z
+        - return accepted (clean)
+        - settled 4050 cents
+        + logged: ReturnAccepted, AccessRevoked, RentalClosed, TrustSignalRecorded, TrustSignalRecorded
+
+  ----- Anke's rental: she sees something Karim did not log -----
+
+  ~ clock advanced to 2026-03-06T08:00:00Z
+
+  [8/16] Anke reserves the same washer
+        actor: renter         clock: 2026-03-06T08:00:00Z
+        - rental rnt_ec23723c3306
+        - 2 day(s), rent 2400 cents
+        - premium 1650 cents, deposit 10000 cents
+        + logged: ItemReserved, InsuranceQuoted, InsuranceBound
+        > 1650 cents, because insurance_rates.yaml v2 (ruleset fce31abe) cell 'mid|1|fair|days_3'
+
+  [9/16] Lockbox PIN issued
+        actor: system         clock: 2026-03-06T08:00:00Z
+        - pin credential 321994 valid 2026-03-07T08:00:00Z -> 2026-03-09T08:00:00Z
+        - derived from sha256(rental_id=rnt_ec23723c3306, location_id=loc_5f72a7f82c57, valid_from_epoch=1772870400)
+        + logged: AccessGranted
+
+  ~ clock advanced to 2026-03-07T09:05:00Z
+
+  This is the moment the whole condition-chain idea earns its keep. Anke is documenting BEFORE she uses it, against what the previous renter left on record. A tag appearing here is attributable to the gap between rentals.
+
+  [10/16] Anke's pre-rental report - a crack Karim never logged
+        actor: renter         clock: 2026-03-07T09:05:00Z
+        - report cnd_1664ad166994 (pre), 2 tag(s), 3 photo(s)
+        - NEW SINCE LAST RENTER: crack_housing [major]
+        - confirmed from previous renter: scuff_paint
+        + logged: ConditionReportSubmitted, TrustSignalRecorded, TrustSignalRecorded, ConditionDiffComputed, TrustSignalRecorded
+        > damage_taxonomy.yaml v3 (ruleset fce31abe)
+
+  [11/16] Collected anyway - she needs it today
+        actor: renter         clock: 2026-03-07T09:05:00Z
+        - credential accepted (accepted)
+        - item collected
+        + logged: AccessCodeValidated, ItemPickedUp
+
+  ~ clock advanced to 2026-03-08T18:00:00Z
+
+  [12/16] Returned
+        actor: renter         clock: 2026-03-08T18:00:00Z
+        - returned on time
+        + logged: ItemReturnInitiated, TrustSignalRecorded
+
+  [13/16] Anke's post-rental report - unchanged from how she found it
+        actor: renter         clock: 2026-03-08T18:00:00Z
+        - report cnd_37a2416977b5 (post), 2 tag(s), 3 photo(s)
+        - confirmed from previous renter: crack_housing, scuff_paint
+        + logged: ConditionReportSubmitted, TrustSignalRecorded, TrustSignalRecorded, ConditionDiffComputed
+        > damage_taxonomy.yaml v3 (ruleset fce31abe)
+
+  Maja opens a damage claim against Anke's rental, because Anke's is the one that ended with the crack on record. Anke disputes it and points at her own pre-rental photos. The system has no opinion about who is right.
+
+  [14/16] Maja claims damage against the rental
+        actor: owner          clock: 2026-03-08T18:00:00Z
+        - damage claimed: crack_housing
+        + logged: DamageReported, TrustSignalRecorded
+
+  [15/16] Anke disputes it, citing her pre-rental report
+        actor: renter         clock: 2026-03-08T18:00:00Z
+        - dispute dsp_174b2a97470c opened over crack_housing
+        - routed to a human; the system records and orders the claims, it does not decide
+        - presentation order: both_parties_signed_report > photo_evidence_attached > earlier_event_seq
+        + logged: DisputeOpened, TrustSignalRecorded, TrustSignalRecorded
+        > precedence.yaml v1 (ruleset fce31abe)
+
+CONDITION CHAIN
+------------------------
+  #  phase  logged at             by     tags on record              new             report          
+  -  -----  --------------------  -----  --------------------------  --------------  ----------------
+  0  pre    2026-03-02T10:30:00Z  karim  scuff_paint                 +scuff_paint    cnd_3b0784725b26
+  1  post   2026-03-03T19:00:00Z  karim  scuff_paint                                 cnd_f861d40af663
+  2  pre    2026-03-07T09:05:00Z  anke   crack_housing, scuff_paint  +crack_housing  cnd_1664ad166994
+  3  post   2026-03-08T18:00:00Z  anke   crack_housing, scuff_paint                  cnd_37a2416977b5
+
+RISK FLAGS
+------------------------
+  (none)
+
+  A human resolves it. The guard on the closing transition is literally named human_resolution_recorded - the rental physically cannot close until a person's id is attached to the outcome.
+
+  ~ clock advanced to 2026-03-12T11:00:00Z
+
+  [16/16] Trust and safety rules no fault: Anke's pre-rental evidence stands
+        actor: system         clock: 2026-03-12T11:00:00Z
+        - resolved by lena (human): no_fault
+        - settled 4050 cents
+        + logged: DisputeResolvedNoFault, TrustSignalRecorded, RentalClosed
+
+TRUST LEDGER - Anke Vandenberg (anke)
+-------------------------------------
+  baseline  500
+
+  seq  signal                       delta  running
+  ---  ---------------------------  -----  -------
+  18   IdentityVerified             +120   620    
+  115  ConditionReportSubmitted     +4     624    
+  122  ReturnedOnTime               +10    634    
+  124  ConditionReportSubmitted     +4     638    
+  128  DamageReportedAgainstRenter  -90    548    
+  130  DisputeOpenedAgainstRenter   -50    498    
+  133  DisputeResolvedForRenter     +30    528    
+
+  final     528/1000 (fair)
+  citation  trust_weights.yaml v4 (ruleset fce31abe)
+
+ITEM - Kaercher K5 Premium
+--------------------------
+  item_id            itm_8c0a4f2b4a2a
+  owner              maja
+  category           pressure_washer
+  state              available
+  classified tier    1 (row R10)
+  effective tier     1
+  replacement value  260,00 EUR
+  purchase price     299,00 EUR
+  day rate           12,00 EUR
+  attributes         accessory_count=few, enclosable=true, fragility=robust, has_fixed_location=false, partner_node_available=false, requires_license=false, value_band=mid, weight_class=two_person
+  clean handovers    0
+  item trust         505
+  citation           tier_rules.yaml v3 row R10 (ruleset fce31abe)
+
+EVENT LOG (tail)
+------------------------
+  seq  clock (UTC)           event                     key payload                                                     
+  ---  --------------------  ------------------------  ----------------------------------------------------------------
+  119  2026-03-07T09:05:00Z  AccessCodeValidated       rental_id=rnt_ec23723c3306, validation_result=accepted          
+  120  2026-03-07T09:05:00Z  ItemPickedUp              item_id=itm_8c0a4f2b4a2a, rental_id=rnt_ec23723c3306            
+  121  2026-03-08T18:00:00Z  ItemReturnInitiated       item_id=itm_8c0a4f2b4a2a, rental_id=rnt_ec23723c3306            
+  122  2026-03-08T18:00:00Z  TrustSignalRecorded       signal=ReturnedOnTime                                           
+  123  2026-03-08T18:00:00Z  ConditionReportSubmitted  item_id=itm_8c0a4f2b4a2a, rental_id=rnt_ec23723c3306, report_id=
+  124  2026-03-08T18:00:00Z  TrustSignalRecorded       signal=ConditionReportSubmitted                                 
+  125  2026-03-08T18:00:00Z  TrustSignalRecorded       signal=ConditionReportSubmitted                                 
+  126  2026-03-08T18:00:00Z  ConditionDiffComputed     item_id=itm_8c0a4f2b4a2a, report_id=cnd_37a2416977b5            
+  127  2026-03-08T18:00:00Z  DamageReported            item_id=itm_8c0a4f2b4a2a, rental_id=rnt_ec23723c3306            
+  128  2026-03-08T18:00:00Z  TrustSignalRecorded       signal=DamageReportedAgainstRenter                              
+  129  2026-03-08T18:00:00Z  DisputeOpened             item_id=itm_8c0a4f2b4a2a, rental_id=rnt_ec23723c3306            
+  130  2026-03-08T18:00:00Z  TrustSignalRecorded       signal=DisputeOpenedAgainstRenter                               
+  131  2026-03-08T18:00:00Z  TrustSignalRecorded       signal=DisputeOpenedOnItem                                      
+  132  2026-03-12T11:00:00Z  DisputeResolvedNoFault    item_id=itm_8c0a4f2b4a2a, rental_id=rnt_ec23723c3306, resolution
+  133  2026-03-12T11:00:00Z  TrustSignalRecorded       signal=DisputeResolvedForRenter                                 
+  134  2026-03-12T11:00:00Z  RentalClosed              item_id=itm_8c0a4f2b4a2a, premium_cents=1650, rental_id=rnt_ec23
+
+FINAL STATE
+------------------------
+  events in log        134
+  log hash             87f32c251862820795a23e4f22cdd2a19bf6cfdb0f9ee4289072edec8845b255
+  rentals              2 rnt_331d3a=closed, rnt_ec2372=closed
+  items not available  (none)
+  open disputes        0
+  purchase offers      0
+
+REPLAY CHECK
+------------------------
+  projection fingerprint        ed85be901ed1371f772d0741166ddd4b8410702e0d77f7a8e0b87ccc866166d7
+  rebuilt-from-log fingerprint  ed85be901ed1371f772d0741166ddd4b8410702e0d77f7a8e0b87ccc866166d7
+  identical                     YES

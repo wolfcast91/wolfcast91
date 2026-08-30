@@ -1,0 +1,267 @@
+id: tier3_graduation
+title: "TIER 3 -> TIER 1: AN ITEM EARNS ITS WAY OUT OF MEETUPS"
+subtitle: "Bernina sewing machine, four clean countersigned handovers, then no more handshakes"
+seed: world
+clock_start_utc: "2026-03-01T08:00:00Z"
+premise: >
+  A sewing machine is delicate, so the classifier puts it in Tier 3: both parties
+  present, shared checklist, both signatures. That is expensive in human time and
+  the point is to stop doing it. Graduation is not a vibe - it is four consecutive
+  clean handovers, item trust of 700, zero lifetime disputes, and the item has to
+  physically fit in a lockbox. Watch the fourth closure flip it to Tier 1.
+
+script:
+  - show: item
+    item: "@sewing"
+  - show: plan
+    item: "@sewing"
+  - note: >
+      Ferdinand owns it. Four different renters take it out, each confirming the
+      previous renter's condition entry rather than starting a fresh opinion.
+
+  - note: "----- rental 1 -----"
+  - cmd: ReserveItem
+    actor: renter
+    label: "Rental 1: reservation"
+    as: r1
+    args:
+      item_id: "@sewing"
+      renter_handle: tobi
+      window_start_utc: "2026-03-02T08:00:00Z"
+      window_end_utc: "2026-03-05T08:00:00Z"
+  - cmd: GrantAccess
+    actor: system
+    label: "Rental 1: Owner confirms the meetup"
+    args: {rental_id: "@r1"}
+  - advance_to: "2026-03-02T10:00:00Z"
+  - cmd: SubmitConditionReport
+    actor: renter
+    label: "Rental 1: pre-rental condition report"
+    args:
+      rental_id: "@r1"
+      phase: pre
+      submitted_by_handle: tobi
+      damage_tags: [sensor_dust]
+      photo_descriptors:
+        accessory_tray: "walking foot + bobbins present"
+        front: "run 1: machine front"
+        rear: "handwheel side"
+        serial_plate: "SN-SEW-0019"
+        working_surface: "needle plate and feed dogs"
+      countersigned_by_handles: [ferdi, tobi]
+  - cmd: OpenLockbox
+    actor: renter
+    label: "Rental 1: Handover at the meetup point"
+    args: {rental_id: "@r1"}
+  - advance_to: "2026-03-04T18:00:00Z"
+  - cmd: ReturnItem
+    actor: renter
+    label: "Rental 1: item returned"
+    args: {rental_id: "@r1"}
+  - cmd: SubmitConditionReport
+    actor: renter
+    label: "Rental 1: post-rental condition report"
+    args:
+      rental_id: "@r1"
+      phase: post
+      submitted_by_handle: tobi
+      damage_tags: [sensor_dust]
+      photo_descriptors:
+        accessory_tray: "walking foot + bobbins present"
+        front: "run 1: machine front"
+        rear: "handwheel side"
+        serial_plate: "SN-SEW-0019"
+        working_surface: "needle plate and feed dogs"
+      countersigned_by_handles: [ferdi, tobi]
+  - cmd: AcceptReturn
+    actor: system
+    label: "Rental 1: return accepted and settled"
+    args: {rental_id: "@r1"}
+
+  - note: "----- rental 2 -----"
+  - cmd: ReserveItem
+    actor: renter
+    label: "Rental 2: reservation"
+    as: r2
+    args:
+      item_id: "@sewing"
+      renter_handle: karim
+      window_start_utc: "2026-03-10T08:00:00Z"
+      window_end_utc: "2026-03-13T08:00:00Z"
+  - cmd: GrantAccess
+    actor: system
+    label: "Rental 2: Owner confirms the meetup"
+    args: {rental_id: "@r2"}
+  - advance_to: "2026-03-10T10:00:00Z"
+  - cmd: SubmitConditionReport
+    actor: renter
+    label: "Rental 2: pre-rental condition report"
+    args:
+      rental_id: "@r2"
+      phase: pre
+      submitted_by_handle: karim
+      damage_tags: [sensor_dust]
+      photo_descriptors:
+        accessory_tray: "walking foot + bobbins present"
+        front: "run 2: machine front"
+        rear: "handwheel side"
+        serial_plate: "SN-SEW-0019"
+        working_surface: "needle plate and feed dogs"
+      countersigned_by_handles: [ferdi, karim]
+  - cmd: OpenLockbox
+    actor: renter
+    label: "Rental 2: Handover at the meetup point"
+    args: {rental_id: "@r2"}
+  - advance_to: "2026-03-12T18:00:00Z"
+  - cmd: ReturnItem
+    actor: renter
+    label: "Rental 2: item returned"
+    args: {rental_id: "@r2"}
+  - cmd: SubmitConditionReport
+    actor: renter
+    label: "Rental 2: post-rental condition report"
+    args:
+      rental_id: "@r2"
+      phase: post
+      submitted_by_handle: karim
+      damage_tags: [sensor_dust]
+      photo_descriptors:
+        accessory_tray: "walking foot + bobbins present"
+        front: "run 2: machine front"
+        rear: "handwheel side"
+        serial_plate: "SN-SEW-0019"
+        working_surface: "needle plate and feed dogs"
+      countersigned_by_handles: [ferdi, karim]
+  - cmd: AcceptReturn
+    actor: system
+    label: "Rental 2: return accepted and settled"
+    args: {rental_id: "@r2"}
+
+  - note: "----- rental 3 -----"
+  - cmd: ReserveItem
+    actor: renter
+    label: "Rental 3: reservation"
+    as: r3
+    args:
+      item_id: "@sewing"
+      renter_handle: maja
+      window_start_utc: "2026-03-20T08:00:00Z"
+      window_end_utc: "2026-03-23T08:00:00Z"
+  - cmd: GrantAccess
+    actor: system
+    label: "Rental 3: Owner confirms the meetup"
+    args: {rental_id: "@r3"}
+  - advance_to: "2026-03-20T10:00:00Z"
+  - cmd: SubmitConditionReport
+    actor: renter
+    label: "Rental 3: pre-rental condition report"
+    args:
+      rental_id: "@r3"
+      phase: pre
+      submitted_by_handle: maja
+      damage_tags: [sensor_dust]
+      photo_descriptors:
+        accessory_tray: "walking foot + bobbins present"
+        front: "run 3: machine front"
+        rear: "handwheel side"
+        serial_plate: "SN-SEW-0019"
+        working_surface: "needle plate and feed dogs"
+      countersigned_by_handles: [ferdi, maja]
+  - cmd: OpenLockbox
+    actor: renter
+    label: "Rental 3: Handover at the meetup point"
+    args: {rental_id: "@r3"}
+  - advance_to: "2026-03-22T18:00:00Z"
+  - cmd: ReturnItem
+    actor: renter
+    label: "Rental 3: item returned"
+    args: {rental_id: "@r3"}
+  - cmd: SubmitConditionReport
+    actor: renter
+    label: "Rental 3: post-rental condition report"
+    args:
+      rental_id: "@r3"
+      phase: post
+      submitted_by_handle: maja
+      damage_tags: [sensor_dust]
+      photo_descriptors:
+        accessory_tray: "walking foot + bobbins present"
+        front: "run 3: machine front"
+        rear: "handwheel side"
+        serial_plate: "SN-SEW-0019"
+        working_surface: "needle plate and feed dogs"
+      countersigned_by_handles: [ferdi, maja]
+  - cmd: AcceptReturn
+    actor: system
+    label: "Rental 3: return accepted and settled"
+    args: {rental_id: "@r3"}
+
+  - note: "----- rental 4 -----"
+  - cmd: ReserveItem
+    actor: renter
+    label: "Rental 4: reservation"
+    as: r4
+    args:
+      item_id: "@sewing"
+      renter_handle: anke
+      window_start_utc: "2026-04-01T08:00:00Z"
+      window_end_utc: "2026-04-04T08:00:00Z"
+  - cmd: GrantAccess
+    actor: system
+    label: "Rental 4: Owner confirms the meetup"
+    args: {rental_id: "@r4"}
+  - advance_to: "2026-04-01T10:00:00Z"
+  - cmd: SubmitConditionReport
+    actor: renter
+    label: "Rental 4: pre-rental condition report"
+    args:
+      rental_id: "@r4"
+      phase: pre
+      submitted_by_handle: anke
+      damage_tags: [sensor_dust]
+      photo_descriptors:
+        accessory_tray: "walking foot + bobbins present"
+        front: "run 4: machine front"
+        rear: "handwheel side"
+        serial_plate: "SN-SEW-0019"
+        working_surface: "needle plate and feed dogs"
+      countersigned_by_handles: [ferdi, anke]
+  - cmd: OpenLockbox
+    actor: renter
+    label: "Rental 4: Handover at the meetup point"
+    args: {rental_id: "@r4"}
+  - advance_to: "2026-04-03T18:00:00Z"
+  - cmd: ReturnItem
+    actor: renter
+    label: "Rental 4: item returned"
+    args: {rental_id: "@r4"}
+  - cmd: SubmitConditionReport
+    actor: renter
+    label: "Rental 4: post-rental condition report"
+    args:
+      rental_id: "@r4"
+      phase: post
+      submitted_by_handle: anke
+      damage_tags: [sensor_dust]
+      photo_descriptors:
+        accessory_tray: "walking foot + bobbins present"
+        front: "run 4: machine front"
+        rear: "handwheel side"
+        serial_plate: "SN-SEW-0019"
+        working_surface: "needle plate and feed dogs"
+      countersigned_by_handles: [ferdi, anke]
+  - cmd: AcceptReturn
+    actor: system
+    label: "Rental 4: return accepted and settled"
+    args: {rental_id: "@r4"}
+
+  - show: item
+    item: "@sewing"
+  - show: plan
+    item: "@sewing"
+  - show: chain
+    item: "@sewing"
+  - show: item_trust
+    item: "@sewing"
+  - show: inventory
+    owner: ferdi

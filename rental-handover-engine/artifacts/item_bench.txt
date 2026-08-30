@@ -1,0 +1,145 @@
+================================================================================================
+  ITEM CLASSIFICATION BENCH
+  34 items, bench v2, ruleset fce31abe
+================================================================================================
+  item                  category           tier  mechanism             row  vs expected
+  --------------------  -----------------  ----  --------------------  ---  -----------
+  cordless_drill        drill_driver       T1    Fully Autonomous      R10  OK         
+  wallpaper_steamer     wallpaper_steamer  T1    Fully Autonomous      R10  OK         
+  pressure_washer       pressure_washer    T1    Fully Autonomous      R10  OK         
+  tile_saw              tile_saw           T1    Fully Autonomous      R10  OK         
+  projector             projector          T1    Fully Autonomous      R10  OK         
+  chainsaw              chainsaw           T1    Fully Autonomous      R10  OK         
+  generator             generator          T1    Fully Autonomous      R10  OK         
+  camping_gear          camping_set        T1    Fully Autonomous      R10  OK         
+  kayak                 kayak              T2    Semi-Autonomous       R09  OK         
+  cement_mixer          cement_mixer       T2    Semi-Autonomous       R07  OK         
+  scaffolding           scaffolding        T2    Semi-Autonomous       R07  OK         
+  ladder                ladder             T2    Semi-Autonomous       R07  OK         
+  party_tent            party_tent         T2    Semi-Autonomous       R07  OK         
+  floor_sander          floor_sander       T2    Semi-Autonomous       R08  OK         
+  snow_blower           snow_blower        T2    Semi-Autonomous       R08  OK         
+  plate_compactor       plate_compactor    T2    Semi-Autonomous       R07  OK         
+  wheelbarrow           wheelbarrow        T2    Semi-Autonomous       R07  OK         
+  engine_hoist          engine_hoist       T2    Semi-Autonomous       R07  OK         
+  pallet_jack           pallet_jack        T2    Semi-Autonomous       R07  OK         
+  dust_extractor        dust_extractor     T2    Semi-Autonomous       R09  OK         
+  dslr_three_lens       dslr_kit           T3    Assisted Meetup       R03  OK         
+  pa_system             pa_system          T3    Assisted Meetup       R03  OK         
+  drone                 drone              T3    Assisted Meetup       R03  OK         
+  sewing_machine        sewing_machine     T3    Assisted Meetup       R03  OK         
+  ebike                 ebike              T3    Assisted Meetup       R05  OK         
+  trailer               trailer            T3    Assisted Meetup       R05  OK         
+  guitar                guitar             T3    Assisted Meetup       R03  OK         
+  telescope             telescope          T3    Assisted Meetup       R03  OK         
+  laser_level           laser_level        T3    Assisted Meetup       R03  OK         
+  mini_excavator        mini_excavator     T4    Certified / Licensed  R01  OK         
+  mobile_crane          mobile_crane       T4    Certified / Licensed  R01  OK         
+  forklift              forklift           T4    Certified / Licensed  R01  OK         
+  carpet_cleaner_depot  carpet_cleaner     T5    Depot / Partner Node  R02  OK         
+  drill_at_depot        drill_driver       T5    Depot / Partner Node  R02  OK         
+
+WHY - the ambiguous ones in the author's own words
+--------------------------------------------------
+  projector
+      AMBIGUOUS: sits under an optics root, but a sealed LED projector is robust, so it stays Tier 1 where a DSLR does not.
+  chainsaw
+      AMBIGUOUS: dangerous, but danger is not a handover attribute. No licence is required in DE for private use, so it automates.
+  camping_gear
+      AMBIGUOUS: many detachable parts, but R06 deliberately excludes low-value kits, so a tent bag does not force a meetup.
+  kayak
+      AMBIGUOUS: not fragile, not licensed, not valuable enough for Tier 3 - it is simply too big for a box.
+  scaffolding
+      AMBIGUOUS: six detachable parts would suggest Tier 3, but a parts count verified in a marked bay is a Tier 2 checklist.
+  party_tent
+      AMBIGUOUS: same reasoning as scaffolding - fixed location beats parts count.
+  sewing_machine
+      AMBIGUOUS: boxable and hand-carried, so it looks like Tier 1 - fragility is the only thing that moves it, and it graduates once proven.
+  ebike
+      AMBIGUOUS: robust and unboxable, which would say Tier 2, but high value plus detachable parts outranks that at precedence 50.
+  trailer
+      AMBIGUOUS: machine-lift would say Tier 2, but a road-legal trailer with straps and a spare is a value-plus-parts case.
+  laser_level
+      AMBIGUOUS: a boxable hand tool, but a knocked rotary laser is a calibration bill, so fragility wins.
+  mini_excavator
+      AMBIGUOUS: small enough that people assume it automates. Instruction and inspection duties are regulatory, so it cannot.
+  carpet_cleaner_depot
+      AMBIGUOUS: identical machine, different custody. Consigning it to a partner node changes the tier - which is the point of grouping by mechanism, not item type.
+
+HANDOVER STEPS PER TIER REACHED BY THIS BENCH
+---------------------------------------------
+
+HANDOVER PLAN - Tier 1: Fully Autonomous
+----------------------------------------
+  * per handover_steps.yaml v2 (ruleset fce31abe)
+
+  #  actor   step                                                               logs                                                                      
+  -  ------  -----------------------------------------------------------------  --------------------------------------------------------------------------
+  1  renter  Reserve item and rental window                                     item_id, renter_id, window_start_utc, window_end_utc, quoted_premium_cents
+  2  system  Issue time-boxed lockbox PIN                                       location_id, access_type, pin, valid_from_utc, valid_until_utc            
+  3  renter  Scan lockbox QR on arrival                                         location_id, qr_payload, validation_result                                
+  4  renter  Photograph item state before unlock (confirm or extend the chain)  report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id 
+  5  renter  Enter PIN, open lockbox, take item                                 location_id, pin_used, access_result                                      
+  6  renter  Return item to lockbox                                             location_id, gps_confirmed                                                
+  7  renter  Photograph item state after use                                    report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id 
+  8  system  Revoke PIN, close rental, settle                                   revoked_pin, settled_cents, trust_delta_renter, trust_delta_item          
+
+HANDOVER PLAN - Tier 2: Semi-Autonomous
+---------------------------------------
+  * per handover_steps.yaml v2 (ruleset fce31abe)
+
+  #  actor   step                                                   logs                                                                                  
+  -  ------  -----------------------------------------------------  --------------------------------------------------------------------------------------
+  1  renter  Reserve item and load-out window                       item_id, renter_id, window_start_utc, window_end_utc, quoted_premium_cents            
+  2  system  Issue yard gate code and spatial instructions          location_id, access_type, pin, valid_from_utc, valid_until_utc, spatial_instruction_id
+  3  renter  Follow spatial instruction, photo-verify the landmark  spatial_instruction_id, landmark_photo_slot, match_declared                           
+  4  renter  Photograph item state before load-out                  report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id             
+  5  renter  Self-service load-out                                  location_id, pin_used, access_result                                                  
+  6  renter  Return item to its marked bay                          location_id, gps_confirmed, spatial_instruction_id                                    
+  7  renter  Photograph item in place after return                  report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id             
+  8  system  Revoke gate code, close rental, settle                 revoked_pin, settled_cents, trust_delta_renter, trust_delta_item                      
+
+HANDOVER PLAN - Tier 3: Assisted Meetup
+---------------------------------------
+  * per handover_steps.yaml v2 (ruleset fce31abe)
+
+  #  actor   step                                              logs                                                                                         
+  -  ------  ------------------------------------------------  ---------------------------------------------------------------------------------------------
+  1  renter  Reserve item and propose meetup window            item_id, renter_id, window_start_utc, window_end_utc, quoted_premium_cents                   
+  2  owner   Owner confirms meetup point and time              location_id, access_type, meetup_utc                                                         
+  3  both    Walk the shared checklist together, item by item  report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id, accessory_manifest
+  4  both    Both parties digitally sign the condition report  report_id, signed_by_owner, signed_by_renter                                                 
+  5  owner   Physical handover                                 location_id, pin_used, access_result                                                         
+  6  both    Return meetup, joint checklist again              location_id, gps_confirmed                                                                   
+  7  both    Post-rental condition report, countersigned       report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id, accessory_manifest
+  8  system  Close rental, settle, evaluate tier graduation    revoked_pin, settled_cents, trust_delta_renter, trust_delta_item                             
+
+HANDOVER PLAN - Tier 4: Certified / Licensed
+--------------------------------------------
+  * per handover_steps.yaml v2 (ruleset fce31abe)
+
+  #  actor        step                                                  logs                                                                                              
+  -  -----------  ----------------------------------------------------  --------------------------------------------------------------------------------------------------
+  1  renter       Request machine and rental window (B2B account only)  item_id, renter_id, window_start_utc, window_end_utc, quoted_premium_cents                        
+  2  system       Verify operator certification against required set    operator_id, required_certificates, presented_certificates, verification_result                   
+  3  both         Execute rental contract and liability annex           contract_id, liability_annex_id, signed_by_owner, signed_by_renter                                
+  4  depot_staff  Depot releases machine against logged operator ID     location_id, pin_used, access_result, operator_id                                                 
+  5  depot_staff  Staff-run inspection record (DGUV-style checklist)    report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id, inspection_checklist_id
+  6  depot_staff  Machine returned to depot, staff intake inspection    location_id, gps_confirmed, operator_id                                                           
+  7  depot_staff  Staff post-rental inspection record                   report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id, inspection_checklist_id
+  8  system       Close contract, settle, file inspection record        revoked_pin, settled_cents, trust_delta_renter, trust_delta_item                                  
+
+HANDOVER PLAN - Tier 5: Depot / Partner Node
+--------------------------------------------
+  * per handover_steps.yaml v2 (ruleset fce31abe)
+
+  #  actor          step                                                      logs                                                                               
+  -  -------------  --------------------------------------------------------  -----------------------------------------------------------------------------------
+  1  renter         Reserve item held at partner node                         item_id, renter_id, window_start_utc, window_end_utc, quoted_premium_cents         
+  2  partner_staff  Partner confirms item present and matching last entry     partner_node_id, item_id, chain_match_declared, prev_report_id                     
+  3  system         Issue collection code for the partner counter or locker   location_id, access_type, pin, valid_from_utc, valid_until_utc                     
+  4  partner_staff  Partner-witnessed condition report at release             report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id          
+  5  partner_staff  Partner releases item against collection code             location_id, pin_used, access_result, partner_node_id                              
+  6  renter         Drop item back at the partner node                        location_id, gps_confirmed, partner_node_id                                        
+  7  partner_staff  Partner intake inspection on return                       report_id, phase, photo_slots, confirmed_tags, added_tags, prev_report_id          
+  8  system         Revoke collection code, close rental, settle partner fee  revoked_pin, settled_cents, trust_delta_renter, trust_delta_item, partner_fee_cents

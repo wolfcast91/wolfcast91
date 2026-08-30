@@ -1,0 +1,95 @@
+id: tier1_clean
+title: "TIER 1 - THE WHOLE POINT: A RENTAL WITH NO HUMANS IN IT"
+subtitle: "Cordless drill, lockbox, PIN, zero coordination"
+seed: world
+clock_start_utc: "2026-03-01T08:00:00Z"
+premise: >
+  Tobias needs a drill for a weekend. Maja is not involved at any point after
+  listing it. No messages, no meeting, no key handover. The platform issues a
+  time-boxed PIN derived from the rental itself, the renter documents the item
+  before unlocking it, and the condition chain grows by two links.
+
+script:
+  - show: item
+    item: "@drill_bosch"
+  - show: plan
+    item: "@drill_bosch"
+
+  - note: >
+      Step one is a reservation. The premium is quoted here, not later: it is a
+      lookup in a 320-cell table keyed by value band, tier, trust band and
+      duration band, so the number is defensible before anyone touches anything.
+  - cmd: ReserveItem
+    actor: renter
+    label: "Tobias reserves the drill for two days"
+    as: r1
+    args:
+      item_id: "@drill_bosch"
+      renter_handle: tobi
+      window_start_utc: "2026-03-02T08:00:00Z"
+      window_end_utc: "2026-03-04T08:00:00Z"
+
+  - cmd: GrantAccess
+    actor: system
+    label: "Platform issues the lockbox PIN"
+    args: {rental_id: "@r1"}
+
+  - show: rental
+    rental: "@r1"
+
+  - advance_to: "2026-03-02T09:14:00Z"
+  - note: >
+      Tobias arrives. Before the lockbox opens he photographs the drill and logs
+      what he sees. This is the community inspection step, and it is a hard gate:
+      the pickup transition is guarded on a pre-rental report existing.
+  - cmd: SubmitConditionReport
+    actor: renter
+    label: "Pre-rental condition report"
+    args:
+      rental_id: "@r1"
+      phase: pre
+      submitted_by_handle: tobi
+      damage_tags: [scratch_minor]
+      photo_descriptors:
+        front: "chuck and body, slight scuff near the collar"
+        serial_plate: "SN-DRL-0001 legible"
+        working_surface: "chuck jaws clean"
+
+  - cmd: OpenLockbox
+    actor: renter
+    label: "PIN entered, lockbox opens, drill collected"
+    args: {rental_id: "@r1"}
+
+  - advance_to: "2026-03-03T17:40:00Z"
+  - note: "The weekend happens. Nothing breaks."
+  - cmd: ReturnItem
+    actor: renter
+    label: "Drill returned to the lockbox, GPS confirmed"
+    args: {rental_id: "@r1", gps_confirmed: true}
+
+  - cmd: SubmitConditionReport
+    actor: renter
+    label: "Post-rental condition report"
+    args:
+      rental_id: "@r1"
+      phase: post
+      submitted_by_handle: tobi
+      damage_tags: [scratch_minor]
+      photo_descriptors:
+        front: "same scuff, no new marks"
+        serial_plate: "SN-DRL-0001 legible"
+        working_surface: "chuck jaws clean"
+
+  - cmd: AcceptReturn
+    actor: system
+    label: "Return accepted, PIN revoked, rental settled"
+    args: {rental_id: "@r1"}
+
+  - show: chain
+    item: "@drill_bosch"
+  - show: trust
+    user: tobi
+  - show: rental
+    rental: "@r1"
+  - show: log
+    limit: 14

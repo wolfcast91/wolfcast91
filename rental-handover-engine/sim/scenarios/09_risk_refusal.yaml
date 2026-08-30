@@ -1,0 +1,49 @@
+id: risk_refusal
+title: "HARD RULES, NOT RISK SCORES"
+subtitle: "Every refusal names the exact rule that fired"
+seed: world
+clock_start_utc: "2026-03-01T08:00:00Z"
+premise: >
+  There is no fraud model here and there never will be. There is a list of
+  boolean rules in trust_weights.yaml, each with a severity of `block` or
+  `review`, and every flag that fires is written to the log carrying the literal
+  rule text. That is the difference between "the system declined you" and "you
+  were declined because id_verified == false". An insurance partner needs the
+  second kind before they will underwrite anything.
+
+script:
+  - note: >
+      Rico registered but never completed identity verification. He tries to
+      reserve a 4200 EUR e-bike.
+  - cmd: ReserveItem
+    actor: renter
+    label: "Unverified renter attempts a high-value reservation"
+    expect_rejection: true
+    args: {item_id: "@ebike", renter_handle: rico, window_start_utc: "2026-03-02T08:00:00Z", window_end_utc: "2026-03-04T08:00:00Z"}
+  - show: risk_flags
+  - note: >
+      Three flags fired at once. Two are `review` and would not have stopped him;
+      unverified_identity is `block`, and it did. Note that the flags are logged
+      even though the command was refused - a refusal is a fact worth keeping.
+
+  - note: >
+      Now a verified renter with an ordinary score reaching for the same e-bike.
+      high_value_new_renter is a `review` flag, so the reservation proceeds and
+      the flag rides along with it.
+  - cmd: ReserveItem
+    actor: renter
+    label: "Verified renter, same high-value item"
+    as: r1
+    args: {item_id: "@ebike", renter_handle: karim, window_start_utc: "2026-03-02T08:00:00Z", window_end_utc: "2026-03-04T08:00:00Z"}
+  - show: rental
+    rental: "@r1"
+  - show: risk_flags
+
+  - note: >
+      The premium reflects the same facts. A `new`-band renter on a very-high
+      value item at Tier 3 is the most expensive cell in the table, and you can
+      point at the exact cell.
+  - show: item
+    item: "@ebike"
+  - show: log
+    limit: 10
