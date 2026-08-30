@@ -1,0 +1,60 @@
+# complementary_items.yaml
+# L0 RULESET — Upsell signal definitions.
+#
+# Replaces "recommendation model" with an explicit graph plus integer
+# thresholds. Nothing here is learned; every pair is a claim a human made and
+# can be argued with.
+
+ruleset_version: 2
+schema: complementary_items/1
+
+# Integer thresholds. Basis points are integers; the comparison is done in
+# integer arithmetic with no division until the final `// 10000`.
+thresholds:
+  cumulative_spend_bp: 6000        # cumulative_rental_cents >= purchase_price_cents * 6000 / 10000
+  repeat_rental_count: 3           # same renter, same item, N completed rentals
+  repeat_category_count: 4         # same renter, same category, N completed rentals
+  complementary_pair_count: 2      # both halves of a pair rented within the window
+  window_seconds: 15552000         # 180 days
+  min_renter_trust_for_offer: 600  # below this we do not make a financing offer
+  financing_terms_months: [3, 6, 12]
+
+# Directed pairs: renting `primary` implies plausible need for `partner`.
+# `signal_strength` is an integer rank used only for ordered output, never math.
+pairs:
+  - {primary: tile_saw,          partner: dust_extractor,   signal_strength: 3, note: "Wet cutting indoors needs extraction."}
+  - {primary: floor_sander,      partner: dust_extractor,   signal_strength: 1, note: "Sanding without extraction is a dust disaster."}
+  - {primary: floor_sander,      partner: carpet_cleaner,   signal_strength: 4, note: "Whole-floor refurbishment sequence."}
+  - {primary: cement_mixer,      partner: wheelbarrow,      signal_strength: 1, note: "Mixed concrete has to be moved."}
+  - {primary: cement_mixer,      partner: plate_compactor,  signal_strength: 2, note: "Slab work: compact then pour."}
+  - {primary: scaffolding,       partner: ladder,           signal_strength: 3, note: "Access to the first lift."}
+  - {primary: scaffolding,       partner: pressure_washer,  signal_strength: 3, note: "Facade cleaning before painting."}
+  - {primary: wallpaper_steamer, partner: carpet_cleaner,   signal_strength: 2, note: "Redecoration sequence: strip, then clean."}
+  - {primary: dslr_kit,          partner: drone,            signal_strength: 2, note: "Full coverage shoot: ground plus aerial."}
+  - {primary: dslr_kit,          partner: pa_system,        signal_strength: 4, note: "Event production bundle."}
+  - {primary: pa_system,         partner: party_tent,       signal_strength: 1, note: "Outdoor event build."}
+  - {primary: pa_system,         partner: generator,        signal_strength: 1, note: "Off-grid power for the rig."}
+  - {primary: party_tent,        partner: generator,        signal_strength: 2, note: "Lighting and catering load."}
+  - {primary: projector,         partner: pa_system,        signal_strength: 2, note: "Screening needs sound."}
+  - {primary: trailer,           partner: pallet_jack,      signal_strength: 3, note: "Load and unload the trailer."}
+  - {primary: engine_hoist,      partner: welder,           signal_strength: 3, note: "Engine-out workshop job."}
+  - {primary: welder,            partner: generator,        signal_strength: 3, note: "Welding away from mains."}
+  - {primary: mini_excavator,    partner: plate_compactor,  signal_strength: 1, note: "Dig, backfill, compact."}
+  - {primary: mini_excavator,    partner: trailer,          signal_strength: 2, note: "Spoil removal."}
+  - {primary: snow_blower,       partner: generator,        signal_strength: 4, note: "Winter outage preparedness."}
+  - {primary: kayak,             partner: trailer,          signal_strength: 3, note: "Transport to water."}
+  - {primary: ebike,             partner: trailer,          signal_strength: 4, note: "Carrying the bike to the trailhead."}
+  - {primary: camping_set,       partner: kayak,            signal_strength: 3, note: "Paddle-camping trip."}
+  - {primary: sewing_machine,    partner: camping_set,      signal_strength: 4, note: "Canvas and awning repair."}
+  - {primary: drill_driver,      partner: laser_level,      signal_strength: 2, note: "Anything mounted straight."}
+  - {primary: laser_level,       partner: scaffolding,      signal_strength: 4, note: "Setting datum lines at height."}
+  - {primary: chainsaw,          partner: trailer,          signal_strength: 2, note: "Hauling the cut wood."}
+  - {primary: pressure_washer,   partner: generator,        signal_strength: 4, note: "Cleaning without a mains outlet."}
+
+# Presented to the renter with each purchase opportunity. Purely descriptive;
+# no arithmetic reads these strings.
+offer_copy:
+  cumulative_spend_threshold: "You have now spent more renting this than a large part of what it costs to own."
+  repeat_rental_threshold: "You have rented this exact item several times."
+  repeat_category_threshold: "You keep coming back to this category."
+  complementary_pair: "You rented both halves of a job that people usually buy into."

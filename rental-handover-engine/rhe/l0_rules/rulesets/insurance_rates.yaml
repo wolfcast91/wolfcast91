@@ -1,0 +1,367 @@
+# insurance_rates.yaml
+# L0 RULESET — GENERATED FILE. Do not hand-edit.
+#
+# Regenerate with:  python3 tools/gen_insurance_rates.py
+# Runtime behaviour is a pure dict lookup on the composite key
+#   "<value_band>|<tier>|<trust_band>|<duration_band>"
+# There is no formula, no interpolation and no fallback at runtime: a key
+# miss raises RateNotFound rather than guessing a premium.
+
+ruleset_version: 2
+schema: insurance_rates/1
+
+bands:
+  value_band_cents:
+    low:       {min: 0,      max: 19999}
+    mid:       {min: 20000,  max: 99999}
+    high:      {min: 100000, max: 499999}
+    very_high: {min: 500000, max: 999999999}
+  duration_band_seconds:
+    hours_24:     {min: 0,       max: 86400}
+    days_3:       {min: 86401,   max: 259200}
+    days_7:       {min: 259201,  max: 604800}
+    days_30_plus: {min: 604801,  max: 999999999}
+
+coverage_tiers:
+  basic:    {deductible_cents: 15000, covers: [theft, fire, third_party]}
+  standard: {deductible_cents: 7500,  covers: [theft, fire, third_party, accidental_damage]}
+  full:     {deductible_cents: 2500,  covers: [theft, fire, third_party, accidental_damage, misuse]}
+
+# Deposit held on the renter, by value band. Integer cents.
+deposit_cents:
+  low:       2500
+  mid:       10000
+  high:      50000
+  very_high: 250000
+
+# Coverage tier assigned per handover tier. Higher-touch handovers carry
+# more evidence, so they earn a lower deductible.
+coverage_tier_by_handover_tier:
+  1: standard
+  2: basic
+  3: full
+  4: basic
+  5: standard
+
+# premium_cents[value_band|tier|trust_band|duration_band] -> integer cents
+premium_cents:
+  "low|1|new|hours_24": 425
+  "low|1|new|days_3": 675
+  "low|1|new|days_7": 1050
+  "low|1|new|days_30_plus": 2525
+  "low|1|fair|hours_24": 350
+  "low|1|fair|days_3": 550
+  "low|1|fair|days_7": 850
+  "low|1|fair|days_30_plus": 2075
+  "low|1|good|hours_24": 300
+  "low|1|good|days_3": 475
+  "low|1|good|days_7": 750
+  "low|1|good|days_30_plus": 1800
+  "low|1|excellent|hours_24": 250
+  "low|1|excellent|days_3": 400
+  "low|1|excellent|days_7": 625
+  "low|1|excellent|days_30_plus": 1525
+  "low|2|new|hours_24": 475
+  "low|2|new|days_3": 775
+  "low|2|new|days_7": 1200
+  "low|2|new|days_30_plus": 2900
+  "low|2|fair|hours_24": 400
+  "low|2|fair|days_3": 625
+  "low|2|fair|days_7": 1000
+  "low|2|fair|days_30_plus": 2375
+  "low|2|good|hours_24": 350
+  "low|2|good|days_3": 550
+  "low|2|good|days_7": 850
+  "low|2|good|days_30_plus": 2075
+  "low|2|excellent|hours_24": 300
+  "low|2|excellent|days_3": 475
+  "low|2|excellent|days_7": 725
+  "low|2|excellent|days_30_plus": 1750
+  "low|3|new|hours_24": 575
+  "low|3|new|days_3": 900
+  "low|3|new|days_7": 1425
+  "low|3|new|days_30_plus": 3400
+  "low|3|fair|hours_24": 475
+  "low|3|fair|days_3": 750
+  "low|3|fair|days_7": 1150
+  "low|3|fair|days_30_plus": 2800
+  "low|3|good|hours_24": 400
+  "low|3|good|days_3": 650
+  "low|3|good|days_7": 1000
+  "low|3|good|days_30_plus": 2425
+  "low|3|excellent|hours_24": 350
+  "low|3|excellent|days_3": 550
+  "low|3|excellent|days_7": 850
+  "low|3|excellent|days_30_plus": 2075
+  "low|4|new|hours_24": 850
+  "low|4|new|days_3": 1350
+  "low|4|new|days_7": 2100
+  "low|4|new|days_30_plus": 5050
+  "low|4|fair|hours_24": 700
+  "low|4|fair|days_3": 1100
+  "low|4|fair|days_7": 1725
+  "low|4|fair|days_30_plus": 4150
+  "low|4|good|hours_24": 600
+  "low|4|good|days_3": 950
+  "low|4|good|days_7": 1500
+  "low|4|good|days_30_plus": 3600
+  "low|4|excellent|hours_24": 500
+  "low|4|excellent|days_3": 825
+  "low|4|excellent|days_7": 1275
+  "low|4|excellent|days_30_plus": 3050
+  "low|5|new|hours_24": 500
+  "low|5|new|days_3": 800
+  "low|5|new|days_7": 1250
+  "low|5|new|days_30_plus": 3025
+  "low|5|fair|hours_24": 425
+  "low|5|fair|days_3": 650
+  "low|5|fair|days_7": 1025
+  "low|5|fair|days_30_plus": 2475
+  "low|5|good|hours_24": 350
+  "low|5|good|days_3": 575
+  "low|5|good|days_7": 900
+  "low|5|good|days_30_plus": 2150
+  "low|5|excellent|hours_24": 300
+  "low|5|excellent|days_3": 500
+  "low|5|excellent|days_7": 775
+  "low|5|excellent|days_30_plus": 1825
+  "mid|1|new|hours_24": 1250
+  "mid|1|new|days_3": 2025
+  "mid|1|new|days_7": 3150
+  "mid|1|new|days_30_plus": 7550
+  "mid|1|fair|hours_24": 1025
+  "mid|1|fair|days_3": 1650
+  "mid|1|fair|days_7": 2575
+  "mid|1|fair|days_30_plus": 6200
+  "mid|1|good|hours_24": 900
+  "mid|1|good|days_3": 1450
+  "mid|1|good|days_7": 2250
+  "mid|1|good|days_30_plus": 5400
+  "mid|1|excellent|hours_24": 775
+  "mid|1|excellent|days_3": 1225
+  "mid|1|excellent|days_7": 1900
+  "mid|1|excellent|days_30_plus": 4600
+  "mid|2|new|hours_24": 1450
+  "mid|2|new|days_3": 2325
+  "mid|2|new|days_7": 3625
+  "mid|2|new|days_30_plus": 8700
+  "mid|2|fair|hours_24": 1200
+  "mid|2|fair|days_3": 1900
+  "mid|2|fair|days_7": 2975
+  "mid|2|fair|days_30_plus": 7150
+  "mid|2|good|hours_24": 1025
+  "mid|2|good|days_3": 1650
+  "mid|2|good|days_7": 2575
+  "mid|2|good|days_30_plus": 6200
+  "mid|2|excellent|hours_24": 875
+  "mid|2|excellent|days_3": 1400
+  "mid|2|excellent|days_7": 2200
+  "mid|2|excellent|days_30_plus": 5275
+  "mid|3|new|hours_24": 1700
+  "mid|3|new|days_3": 2725
+  "mid|3|new|days_7": 4250
+  "mid|3|new|days_30_plus": 10200
+  "mid|3|fair|hours_24": 1400
+  "mid|3|fair|days_3": 2225
+  "mid|3|fair|days_7": 3500
+  "mid|3|fair|days_30_plus": 8375
+  "mid|3|good|hours_24": 1225
+  "mid|3|good|days_3": 1950
+  "mid|3|good|days_7": 3025
+  "mid|3|good|days_30_plus": 7300
+  "mid|3|excellent|hours_24": 1025
+  "mid|3|excellent|days_3": 1650
+  "mid|3|excellent|days_7": 2575
+  "mid|3|excellent|days_30_plus": 6200
+  "mid|4|new|hours_24": 2525
+  "mid|4|new|days_3": 4025
+  "mid|4|new|days_7": 6300
+  "mid|4|new|days_30_plus": 15125
+  "mid|4|fair|hours_24": 2075
+  "mid|4|fair|days_3": 3300
+  "mid|4|fair|days_7": 5175
+  "mid|4|fair|days_30_plus": 12425
+  "mid|4|good|hours_24": 1800
+  "mid|4|good|days_3": 2875
+  "mid|4|good|days_7": 4500
+  "mid|4|good|days_30_plus": 10800
+  "mid|4|excellent|hours_24": 1525
+  "mid|4|excellent|days_3": 2450
+  "mid|4|excellent|days_7": 3825
+  "mid|4|excellent|days_30_plus": 9175
+  "mid|5|new|hours_24": 1500
+  "mid|5|new|days_3": 2425
+  "mid|5|new|days_7": 3775
+  "mid|5|new|days_30_plus": 9075
+  "mid|5|fair|hours_24": 1250
+  "mid|5|fair|days_3": 1975
+  "mid|5|fair|days_7": 3100
+  "mid|5|fair|days_30_plus": 7450
+  "mid|5|good|hours_24": 1075
+  "mid|5|good|days_3": 1725
+  "mid|5|good|days_7": 2700
+  "mid|5|good|days_30_plus": 6475
+  "mid|5|excellent|hours_24": 925
+  "mid|5|excellent|days_3": 1475
+  "mid|5|excellent|days_7": 2300
+  "mid|5|excellent|days_30_plus": 5500
+  "high|1|new|hours_24": 3350
+  "high|1|new|days_3": 5375
+  "high|1|new|days_7": 8400
+  "high|1|new|days_30_plus": 20150
+  "high|1|fair|hours_24": 2750
+  "high|1|fair|days_3": 4425
+  "high|1|fair|days_7": 6900
+  "high|1|fair|days_30_plus": 16550
+  "high|1|good|hours_24": 2400
+  "high|1|good|days_3": 3850
+  "high|1|good|days_7": 6000
+  "high|1|good|days_30_plus": 14400
+  "high|1|excellent|hours_24": 2050
+  "high|1|excellent|days_3": 3275
+  "high|1|excellent|days_7": 5100
+  "high|1|excellent|days_30_plus": 12250
+  "high|2|new|hours_24": 3875
+  "high|2|new|days_3": 6175
+  "high|2|new|days_7": 9650
+  "high|2|new|days_30_plus": 23175
+  "high|2|fair|hours_24": 3175
+  "high|2|fair|days_3": 5075
+  "high|2|fair|days_7": 7925
+  "high|2|fair|days_30_plus": 19050
+  "high|2|good|hours_24": 2750
+  "high|2|good|days_3": 4425
+  "high|2|good|days_7": 6900
+  "high|2|good|days_30_plus": 16550
+  "high|2|excellent|hours_24": 2350
+  "high|2|excellent|days_3": 3750
+  "high|2|excellent|days_7": 5875
+  "high|2|excellent|days_30_plus": 14075
+  "high|3|new|hours_24": 4525
+  "high|3|new|days_3": 7250
+  "high|3|new|days_7": 11350
+  "high|3|new|days_30_plus": 27225
+  "high|3|fair|hours_24": 3725
+  "high|3|fair|days_3": 5950
+  "high|3|fair|days_7": 9325
+  "high|3|fair|days_30_plus": 22350
+  "high|3|good|hours_24": 3250
+  "high|3|good|days_3": 5175
+  "high|3|good|days_7": 8100
+  "high|3|good|days_30_plus": 19450
+  "high|3|excellent|hours_24": 2750
+  "high|3|excellent|days_3": 4400
+  "high|3|excellent|days_7": 6875
+  "high|3|excellent|days_30_plus": 16525
+  "high|4|new|hours_24": 6725
+  "high|4|new|days_3": 10750
+  "high|4|new|days_7": 16800
+  "high|4|new|days_30_plus": 40325
+  "high|4|fair|hours_24": 5525
+  "high|4|fair|days_3": 8825
+  "high|4|fair|days_7": 13800
+  "high|4|fair|days_30_plus": 33125
+  "high|4|good|hours_24": 4800
+  "high|4|good|days_3": 7675
+  "high|4|good|days_7": 12000
+  "high|4|good|days_30_plus": 28800
+  "high|4|excellent|hours_24": 4075
+  "high|4|excellent|days_3": 6525
+  "high|4|excellent|days_7": 10200
+  "high|4|excellent|days_30_plus": 24475
+  "high|5|new|hours_24": 4025
+  "high|5|new|days_3": 6450
+  "high|5|new|days_7": 10075
+  "high|5|new|days_30_plus": 24200
+  "high|5|fair|hours_24": 3300
+  "high|5|fair|days_3": 5300
+  "high|5|fair|days_7": 8275
+  "high|5|fair|days_30_plus": 19875
+  "high|5|good|hours_24": 2875
+  "high|5|good|days_3": 4600
+  "high|5|good|days_7": 7200
+  "high|5|good|days_30_plus": 17275
+  "high|5|excellent|hours_24": 2450
+  "high|5|excellent|days_3": 3925
+  "high|5|excellent|days_7": 6125
+  "high|5|excellent|days_30_plus": 14700
+  "very_high|1|new|hours_24": 9800
+  "very_high|1|new|days_3": 15675
+  "very_high|1|new|days_7": 24500
+  "very_high|1|new|days_30_plus": 58800
+  "very_high|1|fair|hours_24": 8050
+  "very_high|1|fair|days_3": 12875
+  "very_high|1|fair|days_7": 20125
+  "very_high|1|fair|days_30_plus": 48300
+  "very_high|1|good|hours_24": 7000
+  "very_high|1|good|days_3": 11200
+  "very_high|1|good|days_7": 17500
+  "very_high|1|good|days_30_plus": 42000
+  "very_high|1|excellent|hours_24": 5950
+  "very_high|1|excellent|days_3": 9525
+  "very_high|1|excellent|days_7": 14875
+  "very_high|1|excellent|days_30_plus": 35700
+  "very_high|2|new|hours_24": 11275
+  "very_high|2|new|days_3": 18025
+  "very_high|2|new|days_7": 28175
+  "very_high|2|new|days_30_plus": 67625
+  "very_high|2|fair|hours_24": 9250
+  "very_high|2|fair|days_3": 14800
+  "very_high|2|fair|days_7": 23150
+  "very_high|2|fair|days_30_plus": 55550
+  "very_high|2|good|hours_24": 8050
+  "very_high|2|good|days_3": 12875
+  "very_high|2|good|days_7": 20125
+  "very_high|2|good|days_30_plus": 48300
+  "very_high|2|excellent|hours_24": 6850
+  "very_high|2|excellent|days_3": 10950
+  "very_high|2|excellent|days_7": 17100
+  "very_high|2|excellent|days_30_plus": 41050
+  "very_high|3|new|hours_24": 13225
+  "very_high|3|new|days_3": 21175
+  "very_high|3|new|days_7": 33075
+  "very_high|3|new|days_30_plus": 79375
+  "very_high|3|fair|hours_24": 10875
+  "very_high|3|fair|days_3": 17375
+  "very_high|3|fair|days_7": 27175
+  "very_high|3|fair|days_30_plus": 65200
+  "very_high|3|good|hours_24": 9450
+  "very_high|3|good|days_3": 15125
+  "very_high|3|good|days_7": 23625
+  "very_high|3|good|days_30_plus": 56700
+  "very_high|3|excellent|hours_24": 8025
+  "very_high|3|excellent|days_3": 12850
+  "very_high|3|excellent|days_7": 20075
+  "very_high|3|excellent|days_30_plus": 48200
+  "very_high|4|new|hours_24": 19600
+  "very_high|4|new|days_3": 31350
+  "very_high|4|new|days_7": 49000
+  "very_high|4|new|days_30_plus": 117600
+  "very_high|4|fair|hours_24": 16100
+  "very_high|4|fair|days_3": 25750
+  "very_high|4|fair|days_7": 40250
+  "very_high|4|fair|days_30_plus": 96600
+  "very_high|4|good|hours_24": 14000
+  "very_high|4|good|days_3": 22400
+  "very_high|4|good|days_7": 35000
+  "very_high|4|good|days_30_plus": 84000
+  "very_high|4|excellent|hours_24": 11900
+  "very_high|4|excellent|days_3": 19050
+  "very_high|4|excellent|days_7": 29750
+  "very_high|4|excellent|days_30_plus": 71400
+  "very_high|5|new|hours_24": 11750
+  "very_high|5|new|days_3": 18825
+  "very_high|5|new|days_7": 29400
+  "very_high|5|new|days_30_plus": 70550
+  "very_high|5|fair|hours_24": 9650
+  "very_high|5|fair|days_3": 15450
+  "very_high|5|fair|days_7": 24150
+  "very_high|5|fair|days_30_plus": 57950
+  "very_high|5|good|hours_24": 8400
+  "very_high|5|good|days_3": 13450
+  "very_high|5|good|days_7": 21000
+  "very_high|5|good|days_30_plus": 50400
+  "very_high|5|excellent|hours_24": 7150
+  "very_high|5|excellent|days_3": 11425
+  "very_high|5|excellent|days_7": 17850
+  "very_high|5|excellent|days_30_plus": 42850

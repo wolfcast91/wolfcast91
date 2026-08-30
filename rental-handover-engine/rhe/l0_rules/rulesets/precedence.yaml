@@ -1,0 +1,41 @@
+# precedence.yaml
+# L0 RULESET — Global tie-breaking. Charter rule 7: where two rules could apply,
+# a documented order decides, never code evaluation order.
+
+ruleset_version: 1
+schema: precedence/1
+
+# How a decision table resolves multiple matching rows.
+decision_tables:
+  strategy: lowest_precedence_wins
+  require_unique_precedence: true   # enforced on load; duplicate values are a load error
+  require_total_coverage: true      # enforced by tools/prove_exhaustiveness.py
+  allow_catch_all_row: false        # charter rule 6: no default case
+
+# Ordering of every output-facing collection in the system (charter rule 4).
+# The interface and projection layers MUST sort by these keys, in this order.
+sort_keys:
+  event_log: [event_seq]
+  access_log: [event_seq]              # never by timestamp: timestamps collide
+  search_results: [distance_band, availability_rank, trust_score_desc, item_id]
+  inventory_view: [owner_id, category_id, item_id]
+  condition_report_tags: [tag_id]      # canonical tag order, not insertion order
+  handover_steps: [step_index]
+  purchase_opportunities: [signal_rank, item_id]
+  damage_findings: [component_id, tag_id]
+
+# When several upsell signals fire for the same renter+item, this decides which
+# one is reported as the headline reason. Lower rank wins.
+upsell_signal_rank:
+  cumulative_spend_threshold: 1
+  repeat_rental_threshold: 2
+  complementary_pair: 3
+
+# When a condition report and its predecessor disagree, this decides who the
+# system holds responsible before a human dispute resolution overrides it.
+condition_disagreement:
+  strategy: last_clean_signature_wins
+  order:
+    - both_parties_signed_report      # a countersigned report is authoritative
+    - photo_evidence_attached         # evidence beats no evidence
+    - earlier_event_seq               # oldest surviving claim wins the tie

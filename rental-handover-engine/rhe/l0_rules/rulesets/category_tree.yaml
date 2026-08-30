@@ -1,0 +1,92 @@
+# category_tree.yaml
+# L0 RULESET — Fixed category tree replacing "item categorization by model".
+#
+# Attributes resolve root -> leaf; a child key overrides its parent's. A LEAF
+# node must resolve to a COMPLETE attribute set (validated on load), so the tier
+# classifier never sees a missing attribute and never needs a default.
+# Owners may override individual attributes on their listing; every override is
+# recorded as an AttributeOverridden event and shown in the decision trace.
+
+ruleset_version: 3
+schema: category_tree/1
+
+nodes:
+  # ---- roots -------------------------------------------------------------
+  - {id: root_tools,     parent: null, label: "Tools & Equipment", defaults: {requires_license: false, partner_node_available: false, has_fixed_location: false}}
+  - {id: root_outdoor,   parent: null, label: "Outdoor & Leisure",  defaults: {requires_license: false, partner_node_available: false, has_fixed_location: false}}
+  - {id: root_av,        parent: null, label: "Audio, Visual & Optics", defaults: {requires_license: false, partner_node_available: false, has_fixed_location: false, fragility: delicate}}
+  - {id: root_events,    parent: null, label: "Events & Hospitality", defaults: {requires_license: false, partner_node_available: false, has_fixed_location: true}}
+  - {id: root_transport, parent: null, label: "Transport & Mobility", defaults: {requires_license: false, partner_node_available: false, has_fixed_location: false}}
+  - {id: root_heavy,     parent: null, label: "Heavy & Regulated Machinery", defaults: {requires_license: true, partner_node_available: false, has_fixed_location: true, fragility: robust}}
+  - {id: root_home,      parent: null, label: "Home & Craft", defaults: {requires_license: false, partner_node_available: false, has_fixed_location: false}}
+
+  # ---- branches ----------------------------------------------------------
+  - {id: power_tools,    parent: root_tools, label: "Power Tools",         defaults: {enclosable: true, fragility: robust, weight_class: hand}}
+  - {id: site_equipment, parent: root_tools, label: "Site Equipment",      defaults: {enclosable: false, fragility: robust, weight_class: machine_lift, has_fixed_location: true}}
+  - {id: access_equip,   parent: root_tools, label: "Access Equipment",    defaults: {enclosable: false, fragility: robust, weight_class: two_person, has_fixed_location: true}}
+  - {id: floor_care,     parent: root_tools, label: "Floor & Surface Care", defaults: {enclosable: false, fragility: robust, weight_class: two_person}}
+  - {id: power_supply,   parent: root_tools, label: "Power Supply",        defaults: {enclosable: true, fragility: robust, weight_class: two_person}}
+  - {id: garden_power,   parent: root_outdoor, label: "Garden & Seasonal Power", defaults: {fragility: robust}}
+  - {id: watercraft,     parent: root_outdoor, label: "Watercraft",        defaults: {enclosable: false, fragility: robust, weight_class: two_person}}
+  - {id: camping,        parent: root_outdoor, label: "Camping",           defaults: {fragility: robust}}
+  - {id: cameras,        parent: root_av,    label: "Cameras & Optics",    defaults: {enclosable: true, weight_class: hand}}
+  - {id: projection,     parent: root_av,    label: "Projection",          defaults: {enclosable: true, weight_class: hand}}
+  - {id: live_sound,     parent: root_av,    label: "Live Sound",          defaults: {enclosable: false, weight_class: two_person}}
+  - {id: aerial,         parent: root_av,    label: "Aerial",              defaults: {enclosable: true, weight_class: hand}}
+  - {id: instruments,    parent: root_av,    label: "Instruments",         defaults: {enclosable: true, weight_class: hand}}
+  - {id: event_structures, parent: root_events, label: "Event Structures", defaults: {enclosable: false, fragility: robust, weight_class: two_person}}
+  - {id: trailers,       parent: root_transport, label: "Trailers",        defaults: {enclosable: false, fragility: robust, weight_class: machine_lift}}
+  - {id: micromobility,  parent: root_transport, label: "Micromobility",   defaults: {enclosable: false, fragility: robust, weight_class: two_person}}
+  - {id: material_handling, parent: root_transport, label: "Material Handling", defaults: {enclosable: false, fragility: robust, weight_class: machine_lift, has_fixed_location: true}}
+  - {id: earthmoving,    parent: root_heavy, label: "Earthmoving",         defaults: {enclosable: false, weight_class: machine_lift}}
+  - {id: lifting,        parent: root_heavy, label: "Lifting",             defaults: {enclosable: false, weight_class: machine_lift}}
+  - {id: textile,        parent: root_home,  label: "Textile & Sewing",    defaults: {enclosable: true, fragility: delicate, weight_class: hand}}
+  - {id: decorating,     parent: root_home,  label: "Decorating",          defaults: {enclosable: true, fragility: robust, weight_class: hand}}
+
+  # ---- leaves (must resolve to a complete attribute set) ------------------
+  - {id: drill_driver,     parent: power_tools,    label: "Cordless drill / driver",  defaults: {value_band: low,  accessory_count: few}}
+  - {id: chainsaw,         parent: garden_power,   label: "Chainsaw",                 defaults: {enclosable: true, weight_class: hand, value_band: mid, accessory_count: few}}
+  - {id: pressure_washer,  parent: power_tools,    label: "Pressure washer",          defaults: {value_band: mid,  accessory_count: few, weight_class: two_person}}
+  - {id: tile_saw,         parent: power_tools,    label: "Tile saw",                 defaults: {value_band: mid,  accessory_count: few, weight_class: two_person}}
+  - {id: welder,           parent: power_tools,    label: "Welding machine",          defaults: {value_band: mid,  accessory_count: few, weight_class: two_person, enclosable: false}}
+  - {id: laser_level,      parent: power_tools,    label: "Rotary laser level",       defaults: {value_band: mid,  accessory_count: few, fragility: delicate}}
+  - {id: wallpaper_steamer,parent: decorating,     label: "Wallpaper steamer",        defaults: {value_band: low,  accessory_count: few}}
+  - {id: dust_extractor,   parent: floor_care,     label: "Dust extractor",           defaults: {value_band: mid,  accessory_count: few}}
+  - {id: floor_sander,     parent: floor_care,     label: "Floor sander",             defaults: {value_band: mid,  accessory_count: few, weight_class: machine_lift}}
+  - {id: carpet_cleaner,   parent: floor_care,     label: "Carpet cleaner",           defaults: {value_band: mid,  accessory_count: few}}
+  - {id: cement_mixer,     parent: site_equipment, label: "Cement mixer",             defaults: {value_band: mid,  accessory_count: none}}
+  - {id: plate_compactor,  parent: site_equipment, label: "Plate compactor",          defaults: {value_band: mid,  accessory_count: none}}
+  - {id: scaffolding,      parent: access_equip,   label: "Scaffolding set",          defaults: {value_band: mid,  accessory_count: many}}
+  - {id: ladder,           parent: access_equip,   label: "Extension ladder",         defaults: {value_band: low,  accessory_count: none}}
+  - {id: wheelbarrow,      parent: site_equipment, label: "Wheelbarrow",              defaults: {value_band: low,  accessory_count: none, weight_class: two_person}}
+  - {id: generator,        parent: power_supply,   label: "Portable generator",       defaults: {value_band: mid,  accessory_count: few}}
+  - {id: snow_blower,      parent: garden_power,   label: "Snow blower",              defaults: {enclosable: false, weight_class: machine_lift, value_band: mid, accessory_count: none}}
+  - {id: kayak,            parent: watercraft,     label: "Kayak",                    defaults: {value_band: mid,  accessory_count: few}}
+  - {id: camping_set,      parent: camping,        label: "Camping gear set",         defaults: {enclosable: true, weight_class: two_person, value_band: low, accessory_count: many}}
+  - {id: dslr_kit,         parent: cameras,        label: "DSLR with lenses",         defaults: {value_band: high, accessory_count: many, fragility: delicate}}
+  - {id: projector,        parent: projection,     label: "Projector",                defaults: {value_band: mid,  accessory_count: few, fragility: robust}}
+  - {id: telescope,        parent: cameras,        label: "Telescope",                defaults: {value_band: high, accessory_count: many, fragility: delicate}}
+  - {id: pa_system,        parent: live_sound,     label: "PA system",                defaults: {value_band: high, accessory_count: many, fragility: delicate}}
+  - {id: drone,            parent: aerial,         label: "Camera drone",             defaults: {value_band: high, accessory_count: many, fragility: delicate}}
+  - {id: guitar,           parent: instruments,    label: "Acoustic guitar",          defaults: {value_band: mid,  accessory_count: few, fragility: delicate}}
+  - {id: party_tent,       parent: event_structures, label: "Party tent",             defaults: {value_band: mid,  accessory_count: many}}
+  - {id: trailer,          parent: trailers,       label: "Braked box trailer",       defaults: {value_band: high, accessory_count: few}}
+  - {id: ebike,            parent: micromobility,  label: "E-bike",                   defaults: {value_band: high, accessory_count: few}}
+  - {id: pallet_jack,      parent: material_handling, label: "Pallet jack",           defaults: {value_band: mid,  accessory_count: none}}
+  - {id: engine_hoist,     parent: material_handling, label: "Engine hoist",          defaults: {value_band: mid,  accessory_count: few}}
+  - {id: mini_excavator,   parent: earthmoving,    label: "Mini excavator",           defaults: {value_band: very_high, accessory_count: few}}
+  - {id: mobile_crane,     parent: lifting,        label: "Mobile crane",             defaults: {value_band: very_high, accessory_count: few}}
+  - {id: forklift,         parent: lifting,        label: "Forklift",                 defaults: {value_band: very_high, accessory_count: none}}
+  - {id: sewing_machine,   parent: textile,        label: "Sewing machine",           defaults: {value_band: mid,  accessory_count: few}}
+
+# Owners may override these on a listing. Overrides outside this set are rejected.
+owner_overridable:
+  - enclosable
+  - has_fixed_location
+  - value_band
+  - weight_class
+  - fragility
+  - accessory_count
+  - partner_node_available
+overrides_never_allowed:
+  - requires_license   # a regulatory attribute is never an owner's call

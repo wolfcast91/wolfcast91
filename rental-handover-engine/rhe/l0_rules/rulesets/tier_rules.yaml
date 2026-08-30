@@ -1,0 +1,150 @@
+# tier_rules.yaml
+# L0 RULESET — Handover tier decision table.
+#
+# The classifier (L1) is a thin evaluator over this file. It contains NO
+# thresholds, NO branches, and NO default case. Every rule row is explicit and
+# carries a distinct integer `precedence`; the row with the LOWEST precedence
+# that matches wins. Ties are impossible because precedence values are unique
+# (asserted by tools/prove_exhaustiveness.py).
+#
+# Totality is proven, not assumed: the full attribute cross-product
+# (2 * 2 * 2 * 4 * 3 * 2 * 3 * 2 = 2304 cells) is enumerated and every cell must
+# match at least one row. There is deliberately no catch-all row -- rows R09 and
+# R10 between them cover the `enclosable` domain exhaustively, which is what
+# makes the table total.
+
+ruleset_version: 3
+schema: tier_rules/1
+
+# ---------------------------------------------------------------------------
+# Attribute domains. The cross-product of these is the classifier input space.
+# Boolean YAML values are canonicalised to the strings "true"/"false" on load,
+# so every attribute value is a string at evaluation time.
+# ---------------------------------------------------------------------------
+attributes:
+  enclosable:
+    purpose: Fits inside a standard smart lockbox (60x40x40cm interior).
+    domain: [true, false]
+  has_fixed_location:
+    purpose: Item lives permanently at a yard/site and is loaded out in place.
+    domain: [true, false]
+  requires_license:
+    purpose: Operation requires an operator certificate or a regulated inspection regime.
+    domain: [true, false]
+  value_band:
+    purpose: Replacement value band. Bands are defined in insurance_rates.yaml.
+    domain: [low, mid, high, very_high]
+  weight_class:
+    purpose: What it takes to move the item.
+    domain: [hand, two_person, machine_lift]
+  fragility:
+    purpose: Whether a careless handover plausibly destroys the item.
+    domain: [robust, delicate]
+  accessory_count:
+    purpose: Detachable parts that can go missing. none=0, few=1-3, many=4+.
+    domain: [none, few, many]
+  partner_node_available:
+    purpose: Owner has consigned this item to a partner depot / locker node.
+    domain: [true, false]
+
+# ---------------------------------------------------------------------------
+# Rule rows. `when` maps attribute -> list of accepted values. An attribute
+# absent from `when` is a wildcard. `precedence` is unique across all rows.
+# ---------------------------------------------------------------------------
+rows:
+  - id: R01
+    precedence: 10
+    tier: 4
+    rationale: >
+      Regulated operation. Certification and inspection duties cannot be
+      delegated to a lockbox, so this outranks every other consideration.
+    when:
+      requires_license: [true]
+
+  - id: R02
+    precedence: 20
+    tier: 5
+    rationale: >
+      The owner has consigned the item to a partner node. Custody sits with the
+      partner, so the partner's intake/return check replaces the peer handover.
+    when:
+      partner_node_available: [true]
+
+  - id: R03
+    precedence: 30
+    tier: 3
+    rationale: >
+      Delicate items are destroyed by a bad first handover. Both parties present,
+      both sign the condition report, until the item graduates on clean history.
+    when:
+      fragility: [delicate]
+
+  - id: R04
+    precedence: 40
+    tier: 3
+    rationale: >
+      Very high replacement value. The trust cost of a single bad handover
+      exceeds the convenience gain of automating it.
+    when:
+      value_band: [very_high]
+
+  - id: R05
+    precedence: 50
+    tier: 3
+    rationale: >
+      High value AND detachable parts. Value alone is survivable; value plus a
+      parts list is where disputes actually originate.
+    when:
+      value_band: [high]
+      accessory_count: [few, many]
+
+  - id: R06
+    precedence: 60
+    tier: 3
+    rationale: >
+      Many detachable parts on a non-trivial-value item. The completeness check
+      is the whole handover, and it needs a counterparty to witness it.
+      Low-value many-part sets (camping kits) are deliberately excluded, and so
+      are yard items: a parts count you verify in place against a marked bay
+      (scaffolding, party tents) is a Tier 2 checklist, not a meetup.
+    when:
+      accessory_count: [many]
+      value_band: [mid, high]
+      has_fixed_location: [false]
+
+  - id: R07
+    precedence: 70
+    tier: 2
+    rationale: >
+      Item is fixed to a location. Access is a gate code plus spatial
+      instructions; the renter loads out unaccompanied.
+    when:
+      has_fixed_location: [true]
+
+  - id: R08
+    precedence: 80
+    tier: 2
+    rationale: >
+      Needs machinery to move. Cannot be boxed, cannot be handed over casually;
+      self-service load-out from a yard is the only workable mechanism.
+    when:
+      weight_class: [machine_lift]
+
+  - id: R09
+    precedence: 90
+    tier: 2
+    rationale: >
+      Too big for a lockbox but movable by people. Yard or driveway pickup with
+      a photo checklist.
+    when:
+      enclosable: [false]
+
+  - id: R10
+    precedence: 100
+    tier: 1
+    rationale: >
+      Boxable and human-movable, with nothing above flagging it. This is the
+      default-good case the whole product exists for: zero human contact.
+    when:
+      enclosable: [true]
+      weight_class: [hand, two_person]
