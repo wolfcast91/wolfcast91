@@ -26,7 +26,7 @@ import {
   TEXT_COLOR,
 } from "./constants";
 
-export type PorscheHookProps = {
+export type TraumautoHookProps = {
   readonly headlineText?: string;
   readonly sublineText?: string;
   /** Line lengths differ per language, so the size travels with the copy. */
@@ -58,7 +58,7 @@ const Subline: React.FC<{ readonly text: string }> = ({ text }) => {
   );
 };
 
-export const PorscheHook: React.FC<PorscheHookProps> = ({
+export const TraumautoHook: React.FC<TraumautoHookProps> = ({
   headlineText = HEADLINE_TEXT,
   sublineText = SUBLINE_TEXT,
   headlineFontSize = HEADLINE_FONT_SIZE,

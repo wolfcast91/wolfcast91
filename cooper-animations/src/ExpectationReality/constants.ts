@@ -1,5 +1,5 @@
 /**
- * "Expectation / Reality" two-card hook. Same visual theme as PorscheHook:
+ * "Expectation / Reality" two-card hook. Same visual theme as TraumautoHook:
  * pure black, Montserrat Black, spring impact, light streak accent.
  * Frame numbers assume FPS = 30.
  */

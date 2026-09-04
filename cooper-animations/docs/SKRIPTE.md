@@ -9,7 +9,7 @@ umschreiben, was schon veröffentlicht ist (nur den Status-Header ändern).
 
 | Post | Thema | Skript | Animation | Footage | Status |
 |---|---|---|---|---|---|
-| 1 | Vorstellung / Kanal-Motto / CapCut-Basisvorlage | fest | `PorscheHookDE` (Wortlaut offen, s. u.) | offen | Skript fest |
+| 1 | Vorstellung / Kanal-Motto / CapCut-Basisvorlage | fest | `TraumautoHookDE` (Wortlaut offen, s. u.) | offen | Skript fest |
 | 2 | Tag 1 — Bestandsaufnahme | Anfang fest, Rest offen | Post-2-Stempel noch zu bauen | offen | in Arbeit |
 | 3 | — | offen | — | — | offen |
 
@@ -23,9 +23,9 @@ alle Folgeposts gesichert (Regelwerk §8).
 
 | # | Segment | Typ | Inhalt | Notiz |
 |---|---|---|---|---|
-| 1 | Hook | Animation — Hook-Familie | "Du bekommst mein Traumauto!" | ⚠️ Wortlaut-Konflikt: bestehende `PorscheHookDE` sagt aktuell "Ich verschenke mein Traumauto!" — Entscheidung offen (Regelwerk §10) |
+| 1 | Hook | Animation — Hook-Familie | "Du bekommst mein Traumauto!" | ⚠️ Wortlaut-Konflikt: bestehende `TraumautoHookDE` sagt aktuell "Ich verschenke mein Traumauto!" — Entscheidung offen (Regelwerk §10) |
 | — | *Cut* | harter Schnitt | | |
-| 2 | Subline | Animation — Hook-Familie | "Das Problem?" | unverändert aus `PorscheHookDE` übernehmbar |
+| 2 | Subline | Animation — Hook-Familie | "Das Problem?" | unverändert aus `TraumautoHookDE` übernehmbar |
 | — | *Cut* | harter Schnitt | | |
 | 3 | Szene 0 | Footage | Garagentor geht auf | reiner Establishing Shot, keine Caption |
 | 4 | Caption | Animation — Caption-Overlay *(noch zu bauen, s. Regelwerk §2a)* | "Ich hab keins." | |

@@ -1,5 +1,5 @@
 /**
- * All tweakable values for the "PorscheHook" intro live here.
+ * All tweakable values for the "TraumautoHook" intro live here.
  * Frame numbers assume FPS = 30 (see Root.tsx).
  */
 

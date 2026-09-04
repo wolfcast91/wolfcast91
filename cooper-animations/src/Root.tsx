@@ -14,7 +14,7 @@ import {
   COPY_EN as ER_COPY_EN,
   DURATION_IN_FRAMES as ER_DURATION_IN_FRAMES,
 } from "./ExpectationReality/constants";
-import { PorscheHook } from "./PorscheHook";
+import { TraumautoHook } from "./TraumautoHook";
 import {
   COPY_DE,
   COPY_EN,
@@ -22,17 +22,17 @@ import {
   FPS,
   HEIGHT,
   WIDTH,
-} from "./PorscheHook/constants";
+} from "./TraumautoHook/constants";
 
 // Each <Composition> is an entry in the sidebar!
 
 export const RemotionRoot: React.FC = () => {
   return (
     <>
-      {/* Vertical short-form hook: npx remotion render PorscheHook */}
+      {/* Vertical short-form hook: npx remotion render TraumautoHook */}
       <Composition
-        id="PorscheHook"
-        component={PorscheHook}
+        id="TraumautoHook"
+        component={TraumautoHook}
         durationInFrames={DURATION_IN_FRAMES}
         fps={FPS}
         width={WIDTH}
@@ -104,10 +104,10 @@ export const RemotionRoot: React.FC = () => {
         }}
       />
 
-      {/* German cut: npx remotion render PorscheHookDE */}
+      {/* German cut: npx remotion render TraumautoHookDE */}
       <Composition
-        id="PorscheHookDE"
-        component={PorscheHook}
+        id="TraumautoHookDE"
+        component={TraumautoHook}
         durationInFrames={DURATION_IN_FRAMES}
         fps={FPS}
         width={WIDTH}

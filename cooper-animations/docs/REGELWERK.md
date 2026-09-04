@@ -30,7 +30,7 @@ dürfen nicht innerhalb derselben Aussage vermischt werden (z. B. keine
 | Bewegung | Spring-Overshoot, knallt rein, kein Fade | Ease-out, kein Overshoot, sanftes Einsetzen |
 | Licht-Akzent | glänzender `LightStreak`-Sweep | flackerndes `ShopLight` (Werkstattlampe) |
 | Einsatzzweck | reiner Cold-Open-Hook, Erwartung-vs-Realität-Momente | alles, was Charakter/Ehrlichkeit transportiert: Tages-Stempel, Status, Bekenntnis-Sätze |
-| Beispiel-Kompositionen | `PorscheHook(DE)`, `ExpectationReality(DE)` | `DayOne(DE)` |
+| Beispiel-Kompositionen | `TraumautoHook(DE)`, `ExpectationReality(DE)` | `DayOne(DE)` |
 
 **Faustregel:** Der Hook verkauft (0.6–1.2 s, hart, glänzend). Die
 Season-Familie gesteht (langsamer, ehrlicher, nie überschossen).
@@ -133,7 +133,7 @@ ersetzt nur die post-spezifischen Szenen/Captions.
 Punkte, die bewusst *nicht* automatisch entschieden wurden, weil sie
 euren Content betreffen — bitte bei Bedarf im Skript-Dokument fixieren:
 
-- **Hook-Wortlaut:** Die bestehende `PorscheHook`-Komposition trägt aktuell
+- **Hook-Wortlaut:** Die bestehende `TraumautoHook`-Komposition trägt aktuell
   den Text *"Ich verschenke mein Traumauto!"* (Ich-Perspektive). Post 1
   im Skript-Dokument verwendet *"Du bekommst mein Traumauto!"*
   (Du-Perspektive). Beides funktioniert, aber nur eine Variante sollte
