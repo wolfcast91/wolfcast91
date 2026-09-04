@@ -11,6 +11,17 @@
 
 Welcome to your Remotion project!
 
+## Season 1 — "Day One"
+
+Production docs for the channel, not just the code:
+
+- [`docs/REGELWERK.md`](./docs/REGELWERK.md) — Regelwerk: wie jeder Post
+  aufgebaut ist, Farben, Schnittregeln, CapCut-Workflow.
+- [`docs/SKRIPTE.md`](./docs/SKRIPTE.md) — laufendes Skript-Dokument,
+  ein Eintrag pro Post.
+
+Read these before adding a new post or a new composition.
+
 ## Commands
 
 **Install Dependencies**
