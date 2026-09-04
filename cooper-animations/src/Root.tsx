@@ -2,6 +2,12 @@ import "./index.css";
 import { Composition } from "remotion";
 import { HelloWorld } from "./HelloWorld";
 import { Logo } from "./HelloWorld/Logo";
+import { DayOne } from "./DayOne";
+import {
+  COPY_DE as DAY_ONE_COPY_DE,
+  COPY_EN as DAY_ONE_COPY_EN,
+  DURATION_IN_FRAMES as DAY_ONE_DURATION_IN_FRAMES,
+} from "./DayOne/constants";
 import { ExpectationReality } from "./ExpectationReality";
 import {
   COPY_DE as ER_COPY_DE,
@@ -35,6 +41,37 @@ export const RemotionRoot: React.FC = () => {
           headlineText: COPY_EN.headline,
           sublineText: COPY_EN.subline,
           headlineFontSize: COPY_EN.headlineFontSize,
+        }}
+      />
+
+      {/* Season 1 series identity, not a hook: npx remotion render DayOne */}
+      <Composition
+        id="DayOne"
+        component={DayOne}
+        durationInFrames={DAY_ONE_DURATION_IN_FRAMES}
+        fps={FPS}
+        width={WIDTH}
+        height={HEIGHT}
+        defaultProps={{
+          lines: DAY_ONE_COPY_EN.lines,
+          stampTitle: DAY_ONE_COPY_EN.stampTitle,
+          readoutLine1: DAY_ONE_COPY_EN.readoutLine1,
+          readoutLine2: DAY_ONE_COPY_EN.readoutLine2,
+        }}
+      />
+
+      <Composition
+        id="DayOneDE"
+        component={DayOne}
+        durationInFrames={DAY_ONE_DURATION_IN_FRAMES}
+        fps={FPS}
+        width={WIDTH}
+        height={HEIGHT}
+        defaultProps={{
+          lines: DAY_ONE_COPY_DE.lines,
+          stampTitle: DAY_ONE_COPY_DE.stampTitle,
+          readoutLine1: DAY_ONE_COPY_DE.readoutLine1,
+          readoutLine2: DAY_ONE_COPY_DE.readoutLine2,
         }}
       />
 
