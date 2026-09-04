@@ -16,6 +16,26 @@ Destilliert aus Post 1. Jeder Post muss diesen Kern irgendwo transportieren
 — nicht zwingend wortwörtlich, aber spürbar. Das ist der Prüfstein für
 "passt das zum Kanal?".
 
+## 1a. Gefühlswelt → Bildsprache
+
+Sechs Gefühle sollen jeder Post transportieren: **cinematisch,
+bodenständig, ruhig, witzig, fleißig, naiv**. Das ist keine zusätzliche
+Regel, sondern die Begründung für die bestehenden (Familien §2,
+Farbregeln §6, Bildlook §11):
+
+| Gefühl | Wo es herkommt |
+|---|---|
+| Cinematisch | LUT (§11): ACES-Filmic-Kontrastkurve, weicher Highlight-Rolloff |
+| Bodenständig | LUT: 12 % Entsättigung, angehobene statt abgesoffene Schwarzwerte; Off-White statt Reinweiß (§6) |
+| Ruhig | LUT: gedeckte, warme Töne statt Hochglanz-Kontrast; Season-Familie: Ease-out ohne Overshoot (§2) |
+| Naiv | LUT: warme Schatten/Lichter statt kaltes Blockbuster-Teal; `ShopLight`-Flackern statt `LightStreak`-Glanz |
+| Witzig | **Schreibweise**, nicht Bild — kurze, trockene Captions, die Pointe nie erklären (Beispiel Post 1: Grillenzirpen als Gag-Sound) |
+| Fleißig | **Struktur**, nicht Bild — `MonoReadout`-Zähler machen Arbeit sichtbar/messbar (Tage, Stunden, ab §10 auch Euro) |
+
+Vier der sechs Gefühle laufen über die Farb-/Licht-Ebene (LUT + Familien),
+zwei über Schreib- und Struktur-Entscheidungen. Beim Schreiben eines
+neuen Posts beide Ebenen prüfen, nicht nur die Bild-Ebene.
+
 ## 2. Zwei Animations-Familien — nicht mischen
 
 Es gibt aktuell zwei fertige Komponenten-Familien in
@@ -128,7 +148,87 @@ ersetzt nur die post-spezifischen Szenen/Captions.
 - [ ] `SKRIPTE.md` aktualisiert: dieser Post final markiert, nächster
       Post mindestens als Platzhalter angelegt
 
-## 10. Offene Entscheidungen
+## 10. Monetarisierung
+
+Eigenes Dokument: [`MONETARISIERUNG.md`](./MONETARISIERUNG.md). Kurz
+zusammengefasst:
+
+- Ab Post 1 aktiv (Affiliate-Links auf real benutztes Werkzeug/Teile),
+  nicht erst nach Vertrauensaufbau.
+- **Maximal** heißt Flächenabdeckung (Beschreibung, Pinned Comment,
+  Link in Bio — unbegrenzt), nicht In-Video-Frequenz.
+- Im Video: **maximal ein** Callout pro Post, immer kontextuell an eine
+  Szene angedockt, **nie** im Hook, **nie** im Turn-Satz.
+- Eigene Komponenten `AffiliateCallout` und `ProjektFonds` (Outro-Stempel
+  mit Euro-Betrag, analog zum `DayOne`-Stempel) — noch zu bauen.
+- Trägt zum Kanal-Ziel bei: Traumauto-Giveaway am Season-1-Finale, dann
+  Aufbau Richtung 30.000-€-Giveaway in Season 2, finanziert über den
+  sichtbaren "Projekt-Fonds".
+
+## 11. Bildlook / LUT
+
+Datei: [`luts/day-one-v1.cube`](../luts/day-one-v1.cube) (33-Punkt
+3D-LUT, Standard-`.cube`-Format). Vorschau (Original links / Grade
+rechts): [`luts/day-one-v1-preview.png`](../luts/day-one-v1-preview.png).
+Erzeugt reproduzierbar über `luts/generate_lut.py` (reine
+Python-Standardbibliothek, keine externen Abhängigkeiten).
+
+**CapCut-Import:**
+1. Anpassungs-Ebene über die gesamte Timeline legen (nicht pro Clip
+   einzeln, für konsistenten Look).
+2. **Anpassen → LUT → Importieren** → `day-one-v1.cube` auswählen.
+3. Intensität 80–100 %; bei sehr dunklem Rohmaterial auf 60–70 %
+   reduzieren, damit Schatten nicht absaufen.
+4. Auf Remotion-Overlays (reines Schwarz + Grain) **nicht** anwenden —
+   die sind bereits final; die LUT ist für das Kamera-Footage gedacht.
+
+**Technische Basis** (siehe §1a für die Gefühls-Zuordnung):
+Lift/Gamma/Gain pro Kanal (warme, angehobene Schatten; warme Lichter;
+zurückgenommenes Blau in Höhen) → ACES-Filmic-Kurve (Narkowicz-
+Approximation) für Kontrast und Highlight-Rolloff → 12 % Entsättigung
+Richtung Luma.
+
+Anpassungen: Parameter stehen oben in `generate_lut.py` als benannte
+Konstanten (`LIFT`, `GAMMA`, `GAIN`, `DESAT`) — Wert ändern, Skript neu
+laufen lassen, `day-one-v1.cube` wird überschrieben.
+
+## 12. Ablage: Server vs. Git
+
+**Code, Konfiguration, Dokumentation, Skripte und kleine textbasierte
+Assets** (LUT `.cube`, Font-Dateien) gehören ins Git-Repo — und werden
+nach jedem relevanten Arbeitsschritt gepusht, damit alles persistiert
+ist, nicht erst am Ende einer Session.
+
+**Große generierte Binärdateien** (gerenderte mp4s, Referenz-PNG-Stills,
+später Rohaufnahmen) gehören **nicht** ins Repo, sondern auf den eigenen
+Server — dort in einem passenden Ordner je Post. Das bestehende
+`.gitignore` schließt `out/` bereits aus; das entspricht dieser Regel.
+
+**Status:** Diese Session hat aktuell keine Verbindung zu einem Server
+(bewusst offen gelassen statt geraten, siehe Entscheidung unten). Bis
+die Anbindung steht, werden Renders wie bisher per Chat ausgeliefert
+und müssen manuell auf den Server geladen werden. Sobald ein Zugang
+(SFTP/Cloud-Speicher/etc.) bereitsteht, wird dieser Abschnitt aktualisiert
+und ein automatischer Push-Schritt nach jedem Render ergänzt.
+
+Empfohlene Ordnerstruktur auf dem Server (Vorschlag, an eure Struktur
+anpassen):
+
+```
+/day-one/
+  post-01/
+    renders/     (mp4, direkt aus Remotion)
+    footage/     (Rohaufnahmen)
+    exports/     (fertig geschnittene CapCut-Exporte)
+  post-02/
+    ...
+```
+
+Git bleibt die Quelle der Wahrheit für alles Reproduzierbare (Code,
+LUT-Generator, Dokumente). Renders sind reproduzierbare Ableitungen
+davon und müssen nicht versioniert werden.
+
+## 13. Offene Entscheidungen
 
 Punkte, die bewusst *nicht* automatisch entschieden wurden, weil sie
 euren Content betreffen — bitte bei Bedarf im Skript-Dokument fixieren:
@@ -138,3 +238,6 @@ euren Content betreffen — bitte bei Bedarf im Skript-Dokument fixieren:
   im Skript-Dokument verwendet *"Du bekommst mein Traumauto!"*
   (Du-Perspektive). Beides funktioniert, aber nur eine Variante sollte
   kanalweit stehen bleiben — siehe offene Notiz in `SKRIPTE.md` Post 1.
+- **Server-Anbindung für Renders (§12):** Zugangsweg noch offen —
+  bei Bedarf im Chat anstoßen, dann wird §12 ergänzt und Renders werden
+  ab dann automatisch nach jedem Render gepusht statt manuell verteilt.

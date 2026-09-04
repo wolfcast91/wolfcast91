@@ -44,8 +44,15 @@ Audio-only-Ende) als CapCut-Projekt **"Kanal-Vorlage v1"** sichern.
 **Offen:**
 - Hook-Wortlaut final festlegen (s. o.)
 - Caption-Overlay-Komponente bauen (kurze `MarkerLine`, transparenter
-  Hintergrund, unteres Bilddrittel)
+  Hintergrund, unteres Bilddrittel) — dieselbe Basis wie
+  `AffiliateCallout` (siehe unten und `MONETARISIERUNG.md`)
 - Footage für Szene 0–3 aufnehmen
+- 🔗 **Affiliate-Opportunity:** Szene 2 (Ölpeilstab-Problem) ist der
+  natürliche Platz für den einen Affiliate-Callout dieses Videos
+  (Regelwerk §10 / `MONETARISIERUNG.md`) — z. B. direkt danach kurz das
+  Werkzeug/den Peilstab einblenden. Text/Produkt noch offen, aber:
+  **nicht** an Szene 3 (Audio-only-Ende) oder an die Caption "Aber naiv
+  genug, daran zu glauben." (Turn-Satz) hängen — die bleiben unkommerziell.
 
 ---
 

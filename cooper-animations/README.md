@@ -16,9 +16,14 @@ Welcome to your Remotion project!
 Production docs for the channel, not just the code:
 
 - [`docs/REGELWERK.md`](./docs/REGELWERK.md) — Regelwerk: wie jeder Post
-  aufgebaut ist, Farben, Schnittregeln, CapCut-Workflow.
+  aufgebaut ist, Gefühlswelt, Farben, Schnittregeln, CapCut-Workflow,
+  Bildlook/LUT, Ablage (Server vs. Git).
 - [`docs/SKRIPTE.md`](./docs/SKRIPTE.md) — laufendes Skript-Dokument,
   ein Eintrag pro Post.
+- [`docs/MONETARISIERUNG.md`](./docs/MONETARISIERUNG.md) — Affiliate-/
+  Fonds-Konzept ab Post 1.
+- [`luts/day-one-v1.cube`](./luts/day-one-v1.cube) — Season-1-LUT für
+  CapCut (Vorschau: `luts/day-one-v1-preview.png`).
 
 Read these before adding a new post or a new composition.
 
